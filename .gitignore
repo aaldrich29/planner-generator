@@ -1,0 +1,15 @@
+# Local backup copy — not kept in sync, do not publish
+planner - Copy.html
+
+# Private design notes
+Custom Work Productivity Planner System Design.md
+
+# Local tool/editor state
+.claude/
+.vscode/
+.idea/
+
+# OS cruft
+Thumbs.db
+desktop.ini
+.DS_Store

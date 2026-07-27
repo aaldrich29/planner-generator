@@ -1,0 +1,3216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Planner Generator — Printable Paper Planner Pages (Free, No Signup)</title>
+<meta name="description" content="Free browser-based generator for printable paper planner pages: daily execution slips, weekly command center, project dashboards, meeting notes, habit trackers and more. Pick a page, set the date, print or save as PDF. Nothing to install, no account, works offline.">
+<meta name="author" content="Andrew Aldrich">
+<link rel="canonical" href="https://aaldrich29.github.io/planner-generator/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Planner Generator — Printable Paper Planner Pages">
+<meta property="og:description" content="Generate and print letter-size planner pages for a paper productivity binder. Daily, weekly, project, people and reference sheets. Free, no signup, runs entirely in your browser.">
+<meta property="og:url" content="https://aaldrich29.github.io/planner-generator/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Planner Generator — Printable Paper Planner Pages">
+<meta name="twitter:description" content="Generate and print letter-size planner pages for a paper productivity binder. Free, no signup, runs entirely in your browser.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='6' y='3' width='20' height='26' rx='2' fill='%23fff' stroke='%23333' stroke-width='2'/><path d='M11 11h10M11 16h10M11 21h6' stroke='%23888' stroke-width='2' stroke-linecap='round'/></svg>">
+<style>
+/* ─── RESET ─── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ─── APP SHELL ─── */
+body {
+  font-family: system-ui, -apple-system, Arial, sans-serif;
+  background: #e4e4e4;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#top-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 14px;
+  background: #fff;
+  border-bottom: 1px solid #ddd;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  min-height: 40px;
+}
+
+#top-bar h1 {
+  font-size: 11px;
+  font-weight: 700;
+  color: #333;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  margin-right: 6px;
+}
+
+.ctrl-group {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.ctrl-group label {
+  font-size: 10px;
+  color: #777;
+  white-space: nowrap;
+}
+
+.ctrl-group input {
+  font-size: 11px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  padding: 3px 6px;
+  color: #333;
+  height: 26px;
+}
+
+.ctrl-group input[type="text"] { width: 150px; }
+.ctrl-group select {
+  font-size: 11px; border: 1px solid #ccc; border-radius: 3px;
+  padding: 2px 4px; color: #333; height: 26px; background: #fff; cursor: pointer;
+}
+
+.btn {
+  padding: 4px 11px;
+  font-size: 11px;
+  border: 1px solid #bbb;
+  border-radius: 3px;
+  background: #fff;
+  cursor: pointer;
+  white-space: nowrap;
+  height: 26px;
+}
+.btn:hover { background: #f0f0f0; }
+.btn-primary { background: #222; color: #fff; border-color: #222; }
+.btn-primary:hover { background: #444; }
+
+#top-right { margin-left: auto; display: flex; gap: 7px; align-items: center; }
+
+#main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ─── SIDEBAR ─── */
+#sidebar {
+  width: 185px;
+  flex-shrink: 0;
+  background: #fff;
+  border-right: 1px solid #ddd;
+  overflow-y: auto;
+  padding: 6px 0 16px;
+}
+
+.sb-section { margin-bottom: 2px; }
+
+.sb-section-hdr {
+  padding: 5px 10px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #999;
+  text-transform: uppercase;
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.sb-section-hdr:hover { color: #555; }
+
+.sb-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 4px 10px 4px 18px;
+  font-size: 11px;
+  color: #555;
+  background: none;
+  border: none;
+  border-left: 2px solid transparent;
+  cursor: pointer;
+  line-height: 1.4;
+}
+.sb-item:hover { background: #f5f5f5; color: #222; }
+.sb-item.active { color: #111; font-weight: 600; border-left-color: #222; background: #f0f0f0; }
+
+/* ─── PREVIEW ─── */
+#preview-area {
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 20px;
+}
+
+#preview-wrapper {
+  transform-origin: top center;
+  flex-shrink: 0;
+}
+
+/* ─── PLANNER PAGE BASE ─── */
+.planner-page {
+  width: 8.5in;
+  height: 11in;
+  background: #fff;
+  box-shadow: 0 2px 14px rgba(0,0,0,0.18);
+  overflow: hidden;
+  position: relative;
+}
+
+.page-inner {
+  width: 100%;
+  height: 100%;
+  padding: 0.5in 0.5in 0.5in 0.875in;
+  display: flex;
+  flex-direction: column;
+}
+.page-inner.lp { padding: 0.5in 0.875in 0.5in 0.5in; }   /* left page: wide right margin */
+.page-inner.cp { padding: 0.5in 0.6875in 0.5in 0.6875in; } /* center: equal margins */
+
+/* ─── PRINT QUEUE ─── */
+#queue-section { border-top: 1px solid #eee; margin-top: 6px; }
+.qi {
+  display: flex; align-items: center; padding: 3px 8px 3px 12px;
+  gap: 3px; border-bottom: 1px solid #f5f5f5; font-size: 10px;
+}
+.qi-num  { color: #ccc; width: 13px; flex-shrink: 0; font-size: 9px; text-align: right; }
+.qi-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #444; }
+.qi-badge { font-size: 9px; color: #666; background: #efefef; padding: 1px 4px; border-radius: 2px; cursor: pointer; flex-shrink: 0; border: none; line-height: 1.5; }
+.qi-badge:hover { background: #e0e0e0; }
+.qi-btn { font-size: 10px; cursor: pointer; color: #ccc; border: none; background: none; padding: 0 1px; flex-shrink: 0; line-height: 1; }
+.qi-btn:hover { color: #444; }
+.qi-btn.on { color: #444; }
+.qi-btn.rm:hover { color: #d00; }
+#queue-empty { padding: 6px 18px; font-size: 10px; color: #ccc; font-style: italic; }
+#queue-btns { padding: 6px 10px; display: flex; flex-direction: column; gap: 4px; }
+.qi-badge.on { background: #444; color: #fff; }
+#queue-summary { padding: 0 12px 3px; font-size: 9px; color: #999; font-style: italic; }
+
+/* ─── SEGMENTED CONTROL ─── */
+.seg-ctrl { display: flex; border: 1px solid #ccc; border-radius: 3px; overflow: hidden; height: 26px; }
+.seg-ctrl label {
+  padding: 0 9px; font-size: 10px; cursor: pointer; background: #fff;
+  border-right: 1px solid #ccc; white-space: nowrap;
+  display: flex; align-items: center; color: #555; user-select: none;
+}
+.seg-ctrl label:last-child { border-right: none; }
+.seg-ctrl input[type="radio"] { display: none; }
+.seg-ctrl label:has(input:checked) { background: #333; color: #fff; }
+
+/* ─── SHARED PAGE CONTENT ─── */
+.pg-title {
+  font-size: 7pt;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #1a1a1a;
+  padding-bottom: 3pt;
+  border-bottom: 1px solid #999;
+  margin-bottom: 7pt;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.pg-date {
+  font-size: 7pt;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  color: #666;
+}
+
+.sec-label {
+  font-size: 5.5pt;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #888;
+  margin-bottom: 2pt;
+  flex-shrink: 0;
+}
+
+.wline { border-bottom: var(--line-border, 0.5px solid #ccc); height: 0.295in; width: 100%; flex-shrink: 0; }
+
+.cb-row {
+  display: flex;
+  align-items: center;
+  border-bottom: 0.5px solid #ccc;
+  height: 0.295in;
+  flex-shrink: 0;
+}
+.cb {
+  width: 11pt; height: 11pt;
+  border: 0.75px solid #aaa;
+  flex-shrink: 0;
+  margin-right: 5px;
+}
+.cb-fill { flex: 1; }
+.rtn-row {
+  display: flex;
+  align-items: center;
+  border-bottom: 0.5px solid #ebebeb;
+  height: 0.24in;
+  flex-shrink: 0;
+}
+.rtn-cb {
+  width: 8pt; height: 8pt;
+  border: 0.75px solid #bbb;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-right: 5px;
+}
+.rtn-fill { flex: 1; }
+
+.num-row {
+  display: flex;
+  align-items: flex-end;
+  border-bottom: 0.5px solid #ccc;
+  height: 0.32in;
+  flex-shrink: 0;
+}
+.num-lbl {
+  font-size: 7pt;
+  color: #aaa;
+  margin-bottom: 3px;
+  width: 12px;
+  text-align: right;
+  flex-shrink: 0;
+  margin-right: 5px;
+}
+.num-fill { flex: 1; }
+
+.box-border {
+  border: 1px solid #bbb;
+  padding: 4pt 6pt;
+  margin-bottom: 7pt;
+  flex-shrink: 0;
+}
+
+/* ─── PLANNER TABLE ─── */
+.pt { width: 100%; border-collapse: collapse; font-size: 7.5pt; }
+.pt th {
+  border-bottom: 1px solid #999;
+  font-size: 5.5pt;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #777;
+  padding: 2pt 4pt;
+  text-align: left;
+}
+.pt td {
+  border-bottom: 0.5px solid #ddd;
+  height: 0.27in;
+  padding: 0 4pt;
+}
+
+/* ─── WEEKLY COMMAND CENTER ─── */
+.wcc-pool {
+  flex: 1;
+  display: flex;
+  border: 0.5px solid #ccc;
+  margin-bottom: 6pt;
+  min-height: 0;
+}
+.wcc-col {
+  flex: 1;
+  border-right: 0.5px solid #ccc;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.wcc-col:last-child { border-right: none; }
+.wcc-col-hdr {
+  font-size: 6pt;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #555;
+  padding: 2pt 4pt;
+  border-bottom: 0.5px solid #ccc;
+  text-align: center;
+  flex-shrink: 0;
+  line-height: 1.3;
+}
+.wcc-col-date { font-size: 5pt; color: #aaa; display: block; font-weight: 400; letter-spacing: 0; }
+.wcc-lines { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.wcc-line { flex: 1; border-bottom: 0.5px solid #ebebeb; min-height: 0; }
+.wcc-line:last-child { border-bottom: none; }
+
+.wcc-bottom { display: flex; gap: 10pt; flex-shrink: 0; height: 2.75in; }
+.wcc-bl { flex: 1; display: flex; flex-direction: column; }
+.wcc-br { flex: 0 0 2in; display: flex; flex-direction: column; }
+
+/* ─── DAILY EXECUTION SLIP ─── */
+.des-body { flex: 1; display: flex; gap: 10pt; min-height: 0; }
+.des-left { width: 2.45in; flex-shrink: 0; display: flex; flex-direction: column; }
+.des-right { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+
+.time-rows { flex: 1; display: flex; flex-direction: column; min-height: 0; border-bottom: 0.5px solid #bbb; }
+.trow {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  border-top: 0.5px solid #e8e8e8;
+  min-height: 0;
+}
+.trow.hr { border-top-color: #bbb; }
+.tlbl {
+  font-size: 5.5pt;
+  color: #aaa;
+  width: 34pt;
+  flex-shrink: 0;
+  text-align: right;
+  padding-right: 4pt;
+  margin-top: 1px;
+  white-space: nowrap;
+}
+.tline { flex: 1; }
+
+/* ─── MONTHLY CALENDAR ─── */
+.cal-grid {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border: 0.5px solid #ccc;
+  min-height: 0;
+}
+.cal-hdr-row { display: flex; border-bottom: 1px solid #bbb; flex-shrink: 0; }
+.cal-hdr-cell {
+  flex: 1;
+  text-align: center;
+  font-size: 6pt;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #777;
+  padding: 2.5pt 0;
+}
+.cal-row { flex: 1; display: flex; border-bottom: 0.5px solid #ddd; min-height: 0; }
+.cal-row:last-child { border-bottom: none; }
+.cal-cell {
+  flex: 1;
+  border-right: 0.5px solid #eee;
+  padding: 2pt 3pt;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.cal-cell:last-child { border-right: none; }
+.cal-cell.empty { background: #fafafa; }
+.cal-num { font-size: 6.5pt; color: #aaa; margin-bottom: 1pt; flex-shrink: 0; }
+.cal-line { flex: 1; border-bottom: 0.5px solid #efefef; min-height: 4px; }
+.cal-line:last-child { border-bottom: none; }
+
+/* ─── HABIT TRACKER ─── */
+.habit-wrap { flex: 1; display: flex; flex-direction: column; min-height: 0; border: 0.5px solid #ccc; }
+.habit-hdr { display: flex; border-bottom: 1px solid #bbb; flex-shrink: 0; }
+.habit-name-hdr {
+  width: 1.4in;
+  flex-shrink: 0;
+  font-size: 5.5pt;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #888;
+  padding: 2.5pt 4pt;
+  border-right: 1px solid #bbb;
+}
+.habit-day-hdr {
+  flex: 1;
+  text-align: center;
+  font-size: 5pt;
+  color: #aaa;
+  padding: 2.5pt 0;
+  border-left: 0.5px solid #eee;
+}
+.habit-row { flex: 1; display: flex; border-bottom: 0.5px solid #e0e0e0; min-height: 0; }
+.habit-row:last-child { border-bottom: none; }
+.habit-name-cell { width: 1.4in; flex-shrink: 0; border-right: 1px solid #ccc; }
+.habit-day-cell { flex: 1; border-left: 0.5px solid #ebebeb; }
+
+/* ─── WEEKLY PLAN ─── */
+.wp-big3 {
+  display: flex; align-items: flex-end; gap: 6pt;
+  border-bottom: 0.5px solid #ddd; padding-bottom: 2pt; margin-bottom: 5pt;
+  height: 0.3in; flex-shrink: 0;
+}
+.wp-b3 { flex: 1; display: flex; align-items: flex-end; font-size: 7pt; color: #aaa; white-space: nowrap; }
+.wp-b3-line { flex: 1; border-bottom: 0.5px solid #ccc; height: 0.3in; display: block; margin-left: 3pt; }
+
+.wp-grid {
+  height: 6.0in; flex-shrink: 0;
+  display: flex; flex-direction: column;
+  border: 0.5px solid #ccc;
+  margin-bottom: 5pt;
+}
+.wp-row { flex: 1; display: flex; border-bottom: 1px solid #bbb; min-height: 0; }
+.wp-row:last-child { border-bottom: none; }
+.wp-cell {
+  flex: 1; border-right: 0.5px solid #ccc;
+  display: flex; flex-direction: column; min-width: 0;
+}
+.wp-cell:last-child { border-right: none; }
+.wp-cell-hdr {
+  font-size: 6.5pt; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  color: #555; padding: 2.5pt 5pt; border-bottom: 0.5px solid #ccc;
+  display: flex; align-items: baseline; justify-content: space-between; flex-shrink: 0;
+}
+.wp-cell-date { font-size: 5pt; color: #aaa; font-weight: 400; letter-spacing: 0; }
+.wp-cell-lines { flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+.wp-cell-lines .wline { flex: 1; height: auto; min-height: 0; }
+
+.wp-pool { display: flex; gap: 8pt; flex-shrink: 0; }
+.wp-pool-col { flex: 1; }
+
+/* ─── PRINT ─── */
+@media print {
+  #top-bar, #sidebar, #btn-margins { display: none !important; }
+  body, #main { display: block; height: auto; overflow: visible; background: white; }
+  #preview-area { display: block; padding: 0; overflow: visible; }
+  #preview-wrapper { transform: none !important; width: auto !important; height: auto !important; }
+  .planner-page { box-shadow: none; page-break-after: always; }
+  .planner-page:last-child { page-break-after: avoid; }
+}
+
+@page { size: 8.5in 11in; margin: 0; }
+
+/* ─── FAVORITES ─── */
+.sb-item-wrap { display:flex; align-items:center; }
+.fav-star { background:none; border:none; cursor:pointer; color:#ddd; font-size:9px; padding:0 4px; flex-shrink:0; }
+.fav-star.on { color:#f5a623; }
+
+/* ─── ACCENT ─── */
+:root { --accent: ; --accent-sec: #888; --line-border: 0.5px solid #ccc; }
+.pg-title { border-bottom-color: var(--accent, #999); }
+.sec-label { color: var(--accent-sec, #888); }
+.accent-sw { width:16px;height:16px;border-radius:3px;cursor:pointer;border:1.5px solid transparent;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;line-height:1;color:#999; }
+.accent-sw.on { border-color: #333; }
+
+/* ─── LINE STYLE ─── */
+.wline { border-bottom: var(--line-border, 0.5px solid #ccc); height: 0.295in; width: 100%; flex-shrink: 0; }
+
+/* ─── DRAG REORDER ─── */
+.qi.drag-over { border-top: 2px solid #333; }
+.qi[draggable] { cursor: grab; }
+
+/* ─── MARGIN GUIDES ─── */
+.show-guides .page-inner::before {
+  content: '';
+  position: absolute;
+  top: 0.5in; left: 0.875in; right: 0.5in; bottom: 0.5in;
+  border: 1px dashed rgba(0,150,255,0.25);
+  pointer-events: none;
+}
+.show-guides .planner-page::after {
+  content: '';
+  position: absolute;
+  left: 0.3in; top: 0.35in; bottom: 0.35in;
+  width: 2px;
+  background: repeating-linear-gradient(to bottom, rgba(0,150,255,0.2) 0, rgba(0,150,255,0.2) 4px, transparent 4px, transparent 8px);
+}
+
+/* ─── PRINT NAME ─── */
+@media print {
+  .print-name { display: block !important; }
+}
+/* ─── HELP DIALOG ─── */
+dialog::backdrop { background: rgba(0,0,0,0.35); }
+#btn-help { width: 26px; padding: 0; font-weight: 700; }
+@media print { dialog { display: none !important; } }
+
+.print-name {
+  display: none;
+  position: absolute;
+  bottom: 0.28in;
+  right: 0.45in;
+  font-size: 5pt;
+  color: #ccc;
+  letter-spacing: 0.06em;
+}
+</style>
+</head>
+<body>
+
+<div id="top-bar">
+  <h1>Planner Generator</h1>
+
+  <div class="ctrl-group" id="ctrl-week" style="display:none">
+    <label>Week</label>
+    <input type="week" id="inp-week" onchange="renderCurrent()" oninput="renderCurrent()">
+  </div>
+  <div class="ctrl-group" id="ctrl-date" style="display:none">
+    <label>Date</label>
+    <input type="date" id="inp-date" onchange="renderCurrent()" oninput="renderCurrent()">
+  </div>
+  <div class="ctrl-group" id="ctrl-month" style="display:none">
+    <label>Month</label>
+    <input type="month" id="inp-month" onchange="renderCurrent()" oninput="renderCurrent()">
+    <input type="number" id="inp-months" value="1" min="1" max="24" style="width:38px;font-size:11px;border:1px solid #ccc;border-radius:3px;padding:2px 4px;height:26px" title="Number of months">
+    <button class="btn" id="btn-queue-months" style="display:none" onclick="queueMonths()">Queue Months</button>
+  </div>
+  <div class="ctrl-group" id="ctrl-year" style="display:none">
+    <label>Year</label>
+    <input type="number" id="inp-year" min="2020" max="2099" style="width:62px" onchange="renderCurrent()" oninput="renderCurrent()">
+  </div>
+  <div class="ctrl-group" id="ctrl-quarter" style="display:none">
+    <label>Quarter</label>
+    <select id="inp-quarter" onchange="renderCurrent()">
+      <option value="1">Q1</option><option value="2">Q2</option>
+      <option value="3">Q3</option><option value="4">Q4</option>
+    </select>
+  </div>
+  <div class="ctrl-group" id="ctrl-project" style="display:none">
+    <label>Project</label>
+    <input type="text" id="inp-project" placeholder="Project name" oninput="renderCurrent()">
+  </div>
+  <div class="ctrl-group" id="ctrl-person" style="display:none">
+    <label>Meeting with</label>
+    <input type="text" id="inp-person" placeholder="Name" style="width:120px" oninput="renderCurrent()">
+  </div>
+  <div class="ctrl-group" id="ctrl-topic" style="display:none">
+    <label>Title</label>
+    <input type="text" id="inp-topic" placeholder="Title / topic" oninput="renderCurrent()">
+  </div>
+
+  <!-- Daily slip customization (shown only for daily-slip page) -->
+  <div class="ctrl-group" id="ctrl-daily-opts" style="display:none;gap:8px;flex-wrap:wrap">
+    <label>From</label>
+    <select id="inp-start-time" onchange="renderCurrent()">
+      <option value="4">4 AM</option><option value="5">5 AM</option>
+      <option value="6">6 AM</option><option value="7">7 AM</option>
+      <option value="8" selected>8 AM</option><option value="9">9 AM</option>
+    </select>
+    <label>to</label>
+    <select id="inp-end-time" onchange="renderCurrent()">
+      <option value="16">4 PM</option><option value="17" selected>5 PM</option>
+      <option value="18">6 PM</option><option value="19">7 PM</option>
+      <option value="20">8 PM</option><option value="21">9 PM</option><option value="22">10 PM</option>
+    </select>
+    <select id="inp-slot-size" onchange="renderCurrent()">
+      <option value="30" selected>30 min</option>
+      <option value="60">1 hr</option>
+    </select>
+    <span style="width:1px;height:20px;background:#ddd;align-self:center"></span>
+    <div class="seg-ctrl">
+      <label><input type="radio" name="daily-right" value="tasks-notes" checked onchange="renderCurrent()"> Tasks + Notes</label>
+      <label><input type="radio" name="daily-right" value="tasks" onchange="renderCurrent()"> Tasks only</label>
+      <label><input type="radio" name="daily-right" value="notes" onchange="renderCurrent()"> Notes only</label>
+    </div>
+    <label style="color:#777;font-size:10px">Tasks</label>
+    <input type="number" id="inp-tasks" value="10" min="1" max="30" style="width:42px;font-size:11px;border:1px solid #ccc;border-radius:3px;padding:2px 4px;height:26px" oninput="renderCurrent()">
+    <span style="width:1px;height:20px;background:#ddd;align-self:center"></span>
+    <input type="checkbox" id="inp-show-interrupt" onchange="renderCurrent()" style="width:auto;height:auto;border:none;padding:0">
+    <label for="inp-show-interrupt" style="cursor:pointer">Interrupt</label>
+    <span style="width:1px;height:20px;background:#ddd;align-self:center"></span>
+    <label style="color:#999;font-size:10px;white-space:nowrap">Routines</label>
+    <label style="font-size:10px;color:#555;white-space:nowrap"><input type="checkbox" id="inp-rtn-morning" onchange="renderCurrent()" style="width:auto;height:auto;border:none;padding:0;margin-right:3px">Morn</label>
+    <label style="font-size:10px;color:#555;white-space:nowrap"><input type="checkbox" id="inp-rtn-startup" onchange="renderCurrent()" style="width:auto;height:auto;border:none;padding:0;margin-right:3px">Startup</label>
+    <label style="font-size:10px;color:#555;white-space:nowrap"><input type="checkbox" id="inp-rtn-shutdown" onchange="renderCurrent()" style="width:auto;height:auto;border:none;padding:0;margin-right:3px">Shutdown</label>
+    <label style="font-size:10px;color:#555;white-space:nowrap"><input type="checkbox" id="inp-rtn-evening" onchange="renderCurrent()" style="width:auto;height:auto;border:none;padding:0;margin-right:3px">Even</label>
+  </div>
+
+  <div class="ctrl-group" id="ctrl-compass" style="display:none">
+    <button class="btn" onclick="openDomainEditor()" style="font-size:10px">Domains…</button>
+  </div>
+  <div class="ctrl-group" id="ctrl-bible" style="display:none">
+    <label style="font-size:10px;color:#777">Range</label>
+    <select id="inp-bible-range" style="font-size:10px;height:26px" onchange="onBibleRangeChange()">
+      <option value="full">Full Bible</option>
+      <option value="ot">Old Testament</option>
+      <option value="nt">New Testament</option>
+      <option value="pent">Pentateuch</option>
+      <option value="hist">History</option>
+      <option value="poet">Poetry &amp; Wisdom</option>
+      <option value="maj">Major Prophets</option>
+      <option value="min">Minor Prophets</option>
+      <option value="gospels">Gospels</option>
+      <option value="epist">Acts &amp; Epistles</option>
+      <option value="rev">Revelation</option>
+      <option value="custom">Custom…</option>
+    </select>
+    <span id="ctrl-bible-custom" style="display:none;align-items:center;gap:5px">
+      <select id="inp-bible-from" style="font-size:10px;height:26px" onchange="renderCurrent()">
+        <option value="0">Genesis</option><option value="1">Exodus</option><option value="2">Leviticus</option>
+        <option value="3">Numbers</option><option value="4">Deuteronomy</option><option value="5">Joshua</option>
+        <option value="6">Judges</option><option value="7">Ruth</option><option value="8">1 Samuel</option>
+        <option value="9">2 Samuel</option><option value="10">1 Kings</option><option value="11">2 Kings</option>
+        <option value="12">1 Chronicles</option><option value="13">2 Chronicles</option><option value="14">Ezra</option>
+        <option value="15">Nehemiah</option><option value="16">Esther</option><option value="17">Job</option>
+        <option value="18">Psalms</option><option value="19">Proverbs</option><option value="20">Ecclesiastes</option>
+        <option value="21">Song of Solomon</option><option value="22">Isaiah</option><option value="23">Jeremiah</option>
+        <option value="24">Lamentations</option><option value="25">Ezekiel</option><option value="26">Daniel</option>
+        <option value="27">Hosea</option><option value="28">Joel</option><option value="29">Amos</option>
+        <option value="30">Obadiah</option><option value="31">Jonah</option><option value="32">Micah</option>
+        <option value="33">Nahum</option><option value="34">Habakkuk</option><option value="35">Zephaniah</option>
+        <option value="36">Haggai</option><option value="37">Zechariah</option><option value="38">Malachi</option>
+        <option value="39">Matthew</option><option value="40">Mark</option><option value="41">Luke</option>
+        <option value="42">John</option><option value="43">Acts</option><option value="44">Romans</option>
+        <option value="45">1 Corinthians</option><option value="46">2 Corinthians</option><option value="47">Galatians</option>
+        <option value="48">Ephesians</option><option value="49">Philippians</option><option value="50">Colossians</option>
+        <option value="51">1 Thessalonians</option><option value="52">2 Thessalonians</option><option value="53">1 Timothy</option>
+        <option value="54">2 Timothy</option><option value="55">Titus</option><option value="56">Philemon</option>
+        <option value="57">Hebrews</option><option value="58">James</option><option value="59">1 Peter</option>
+        <option value="60">2 Peter</option><option value="61">1 John</option><option value="62">2 John</option>
+        <option value="63">3 John</option><option value="64">Jude</option><option value="65">Revelation</option>
+      </select>
+      <span style="font-size:10px;color:#777">to</span>
+      <select id="inp-bible-to" style="font-size:10px;height:26px" onchange="renderCurrent()">
+        <option value="0">Genesis</option><option value="1">Exodus</option><option value="2">Leviticus</option>
+        <option value="3">Numbers</option><option value="4">Deuteronomy</option><option value="5">Joshua</option>
+        <option value="6">Judges</option><option value="7">Ruth</option><option value="8">1 Samuel</option>
+        <option value="9">2 Samuel</option><option value="10">1 Kings</option><option value="11">2 Kings</option>
+        <option value="12">1 Chronicles</option><option value="13">2 Chronicles</option><option value="14">Ezra</option>
+        <option value="15">Nehemiah</option><option value="16">Esther</option><option value="17">Job</option>
+        <option value="18">Psalms</option><option value="19">Proverbs</option><option value="20">Ecclesiastes</option>
+        <option value="21">Song of Solomon</option><option value="22">Isaiah</option><option value="23">Jeremiah</option>
+        <option value="24">Lamentations</option><option value="25">Ezekiel</option><option value="26">Daniel</option>
+        <option value="27">Hosea</option><option value="28">Joel</option><option value="29">Amos</option>
+        <option value="30">Obadiah</option><option value="31">Jonah</option><option value="32">Micah</option>
+        <option value="33">Nahum</option><option value="34">Habakkuk</option><option value="35">Zephaniah</option>
+        <option value="36">Haggai</option><option value="37">Zechariah</option><option value="38">Malachi</option>
+        <option value="39">Matthew</option><option value="40">Mark</option><option value="41">Luke</option>
+        <option value="42">John</option><option value="43">Acts</option><option value="44">Romans</option>
+        <option value="45">1 Corinthians</option><option value="46">2 Corinthians</option><option value="47">Galatians</option>
+        <option value="48">Ephesians</option><option value="49">Philippians</option><option value="50">Colossians</option>
+        <option value="51">1 Thessalonians</option><option value="52">2 Thessalonians</option><option value="53">1 Timothy</option>
+        <option value="54">2 Timothy</option><option value="55">Titus</option><option value="56">Philemon</option>
+        <option value="57">Hebrews</option><option value="58">James</option><option value="59">1 Peter</option>
+        <option value="60">2 Peter</option><option value="61">1 John</option><option value="62">2 John</option>
+        <option value="63">3 John</option><option value="64">Jude</option><option value="65" selected>Revelation</option>
+      </select>
+    </span>
+  </div>
+  <div class="ctrl-group" id="ctrl-undated" style="margin-left:auto">
+    <input type="checkbox" id="inp-undated" onchange="renderCurrent()" style="width:auto;height:auto;border:none;padding:0">
+    <label for="inp-undated" style="cursor:pointer">Undated</label>
+  </div>
+  <div class="ctrl-group">
+    <label style="font-size:10px;color:#777">Lines</label>
+    <div class="seg-ctrl" style="height:22px">
+      <label><input type="radio" name="line-style" value="ruled" checked onchange="setLineStyle(this.value)"> ─</label>
+      <label><input type="radio" name="line-style" value="dotted" onchange="setLineStyle(this.value)"> ···</label>
+      <label><input type="radio" name="line-style" value="blank" onchange="setLineStyle(this.value)"> ∅</label>
+    </div>
+  </div>
+  <div class="ctrl-group" id="ctrl-accent">
+    <label style="font-size:10px;color:#777">Accent</label>
+    <div id="accent-swatches" style="display:flex;gap:3px;align-items:center">
+      <div class="accent-sw" data-color="" style="background:#eee;border-color:#ccc" onclick="setAccent('')" title="None">×</div>
+      <div class="accent-sw" data-color="#6b7a8d" style="background:#6b7a8d" onclick="setAccent('#6b7a8d')" title="Slate"></div>
+      <div class="accent-sw" data-color="#6b8f71" style="background:#6b8f71" onclick="setAccent('#6b8f71')" title="Sage"></div>
+      <div class="accent-sw" data-color="#b5533c" style="background:#b5533c" onclick="setAccent('#b5533c')" title="Rust"></div>
+      <div class="accent-sw" data-color="#6b4c7a" style="background:#6b4c7a" onclick="setAccent('#6b4c7a')" title="Plum"></div>
+      <div class="accent-sw" data-color="#2c4a7c" style="background:#2c4a7c" onclick="setAccent('#2c4a7c')" title="Navy"></div>
+      <div class="accent-sw" data-color="#8f7a4c" style="background:#8f7a4c" onclick="setAccent('#8f7a4c')" title="Warm"></div>
+    </div>
+  </div>
+  <div class="ctrl-group">
+    <input type="text" id="inp-username" placeholder="Your name (footer)" style="width:130px;font-size:10px" oninput="STORAGE.set('username', this.value)">
+  </div>
+  <div class="ctrl-group">
+    <label>Margin</label>
+    <div class="seg-ctrl">
+      <label><input type="radio" name="margin" value="right" checked onchange="applyMargin()"> Right pg</label>
+      <label><input type="radio" name="margin" value="left" onchange="applyMargin()"> Left pg</label>
+      <label><input type="radio" name="margin" value="center" onchange="applyMargin()"> Center</label>
+    </div>
+  </div>
+  <div class="ctrl-group" id="ctrl-notes-back">
+    <label>Back</label>
+    <select id="inp-back-mode" style="font-size:10px">
+      <option value="blank">— (none)</option>
+      <option value="notes">Notes page</option>
+      <option value="duplicate">Duplicate</option>
+    </select>
+  </div>
+  <div id="top-right" style="margin-left:0">
+    <button class="btn" id="btn-week5" style="display:none" onclick="printWeekDays(5)">Print 5 Days</button>
+    <button class="btn" id="btn-week7" style="display:none" onclick="printWeekDays(7)">Print 7 Days</button>
+    <button class="btn" id="btn-qday5" style="display:none" onclick="addDaysToQueue(5)">Queue 5 Days</button>
+    <button class="btn" id="btn-qday7" style="display:none" onclick="addDaysToQueue(7)">Queue 7 Days</button>
+    <span style="width:1px;height:20px;background:#ddd;align-self:center"></span>
+    <button class="btn" id="btn-proj-pack" style="display:none" onclick="addProjectPack()">+ Project Pack</button>
+    <button class="btn" onclick="addToQueue()">+ Queue</button>
+    <button class="btn btn-primary" onclick="doPrint()">Print / Save PDF</button>
+    <button class="btn" id="btn-help" onclick="openHelp()" title="How this works">?</button>
+  </div>
+</div>
+
+<div id="main">
+  <div id="sidebar">
+    <div class="sb-section" id="fav-section" style="display:none">
+      <div class="sb-section-hdr" onclick="toggleSec(this)">★ Favorites <span>▾</span></div>
+      <div class="sb-items" id="fav-list"></div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-hdr" onclick="toggleSec(this)">01 Navigation <span>▾</span></div>
+      <div class="sb-items">
+        <div class="sb-item-wrap"><button class="sb-item" data-page="monthly-calendar" data-ctrl="month" onclick="pick(this)">Monthly Calendar</button><button class="fav-star" onclick="toggleFav('monthly-calendar',event)">★</button></div>
+        <div class="sb-item-wrap"><button class="sb-item" data-page="annual-deadlines" data-ctrl="year" onclick="pick(this)">Annual Deadlines</button><button class="fav-star" onclick="toggleFav('annual-deadlines',event)">★</button></div>
+        <div class="sb-item-wrap"><button class="sb-item" data-page="brain-dump" data-ctrl="" onclick="pick(this)">Brain Dump / Inbox</button><button class="fav-star" onclick="toggleFav('brain-dump',event)">★</button></div>
+      </div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-hdr" onclick="toggleSec(this)">02 Execution <span>▾</span></div>
+      <div class="sb-items">
+        <div class="sb-item-wrap"><button class="sb-item" data-page="weekly-cc" data-ctrl="week" onclick="pick(this)">Weekly Command Center</button><button class="fav-star" onclick="toggleFav('weekly-cc',event)">★</button></div>
+        <div class="sb-item-wrap"><button class="sb-item" data-page="weekly-plan" data-ctrl="week" onclick="pick(this)">Weekly Plan</button><button class="fav-star" onclick="toggleFav('weekly-plan',event)">★</button></div>
+        <div class="sb-item-wrap"><button class="sb-item" data-page="daily-slip" data-ctrl="date,week-print" onclick="pick(this)">Daily Execution Slip</button><button class="fav-star" onclick="toggleFav('daily-slip',event)">★</button></div>
+        <div class="sb-item-wrap"><button class="sb-item" data-page="weekly-review" data-ctrl="week" onclick="pick(this)">Weekly Review</button><button class="fav-star" onclick="toggleFav('weekly-review',event)">★</button></div>
+        <div class="sb-item-wrap"><button class="sb-item" data-page="focus-block" data-ctrl="date" onclick="pick(this)">Focus Block Planner</button><button class="fav-star" onclick="toggleFav('focus-block',event)">★</button></div>
+        <div class="sb-item-wrap"><button class="sb-item" data-page="weekly-metrics" data-ctrl="week" onclick="pick(this)">Weekly Metrics</button><button class="fav-star" onclick="toggleFav('weekly-metrics',event)">★</button></div>
+      </div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-hdr" onclick="toggleSec(this)">03 Projects <span>▾</span></div>
+      <div class="sb-items">
+        <div class="sb-item-wrap"><button class="sb-item" data-page="project-list" data-ctrl="" onclick="pick(this)">Project List</button><button class="fav-star" onclick="toggleFav('project-list',event)">★</button></div>
+        <div class="sb-item-wrap"><button class="sb-item" data-page="project-dashboard" data-ctrl="project,pp" onclick="pick(this)">Project Dashboard</button><button class="fav-star" onclick="toggleFav('project-dashboard',event)">★</button></div>
+        <div class="sb-item-wrap"><button class="sb-item" data-page="milestone-tracker" data-ctrl="project,pp" onclick="pick(this)">Milestone Tracker</button><button class="fav-star" onclick="toggleFav('milestone-tracker',event)">★</button></div>
+        <div class="sb-item-wrap"><button class="sb-item" data-page="next-actions" data-ctrl="project,pp" onclick="pick(this)">Next Action List</button><button class="fav-star" onclick="toggleFav('next-actions',event)">★</button></div>
+        <div class="sb-item-wrap"><button class="sb-item" data-page="project-log" data-ctrl="project,pp" onclick="pick(this)">Project Log</button><button class="fav-star" onclick="toggleFav('project-log',event)">★</button></div>
+        <div class="sb-item-wrap"><button class="sb-item" data-page="decision-log" data-ctrl="" onclick="pick(this)">Decision Log</button><button class="fav-star" onclick="toggleFav('decision-log',event)">★</button></div>
+        <div class="sb-item-wrap"><button class="sb-item" data-page="risk-register" data-ctrl="project,pp" onclick="pick(this)">Risk Register</button><button class="fav-star" onclick="toggleFav('risk-register',event)">★</button></div>
+        <div class="sb-item-wrap"><button class="sb-item" data-page="after-action" data-ctrl="topic,date" onclick="pick(this)">After-Action Report</button><button class="fav-star" onclick="toggleFav('after-action',event)">★</button></div>
+        <div class="sb-item-wrap"><button class="sb-item" data-page="delegation" data-ctrl="" onclick="pick(this)">Delegation Tracker</button><button class="fav-star" onclick="toggleFav('delegation',event)">★</button></div>
+      </div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-hdr" onclick="toggleSec(this)">04 People <span>▾</span></div>
+      <div class="sb-items">
+        <div class="sb-item-wrap"><button class="sb-item" data-page="agenda" data-ctrl="topic,date" onclick="pick(this)">Meeting Agenda</button><button class="fav-star" onclick="toggleFav('agenda',event)">★</button></div>
+        <div class="sb-item-wrap"><button class="sb-item" data-page="interview" data-ctrl="person,date" onclick="pick(this)">Interview Notes</button><button class="fav-star" onclick="toggleFav('interview',event)">★</button></div>
+        <div class="sb-item-wrap"><button class="sb-item" data-page="perf-review" data-ctrl="" onclick="pick(this)">Perf Review Prep</button><button class="fav-star" onclick="toggleFav('perf-review',event)">★</button></div>
+        <div class="sb-item-wrap"><button class="sb-item" data-page="waiting-on" data-ctrl="" onclick="pick(this)">Waiting On Log</button><button class="fav-star" onclick="toggleFav('waiting-on',event)">★</button></div>
+        <div class="sb-item-wrap"><button class="sb-item" data-page="meeting-notes" data-ctrl="topic,date" onclick="pick(this)">Meeting Notes</button><button class="fav-star" onclick="toggleFav('meeting-notes',event)">★</button></div>
+        <div class="sb-item-wrap"><button class="sb-item" data-page="one-on-one" data-ctrl="person" onclick="pick(this)">1:1 Meeting Template</button><button class="fav-star" onclick="toggleFav('one-on-one',event)">★</button></div>
+        <div class="sb-item-wrap"><button class="sb-item" data-page="meeting-log" data-ctrl="person" onclick="pick(this)">Meeting Log</button><button class="fav-star" onclick="toggleFav('meeting-log',event)">★</button></div>
+      </div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-hdr" onclick="toggleSec(this)">05 Reference <span>▾</span></div>
+      <div class="sb-items">
+        <div class="sb-item-wrap"><button class="sb-item" data-page="budget-tracker" data-ctrl="month" onclick="pick(this)">Budget / Expense Tracker</button><button class="fav-star" onclick="toggleFav('budget-tracker',event)">★</button></div>
+        <div class="sb-item-wrap"><button class="sb-item" data-page="reading-list" data-ctrl="" onclick="pick(this)">Reading / Learning List</button><button class="fav-star" onclick="toggleFav('reading-list',event)">★</button></div>
+        <div class="sb-item-wrap"><button class="sb-item" data-page="contact-sheet" data-ctrl="" onclick="pick(this)">Contact Reference Sheet</button><button class="fav-star" onclick="toggleFav('contact-sheet',event)">★</button></div>
+        <div class="sb-item-wrap"><button class="sb-item" data-page="sop-ref" data-ctrl="topic" onclick="pick(this)">SOP / Tech Reference</button><button class="fav-star" onclick="toggleFav('sop-ref',event)">★</button></div>
+        <div class="sb-item-wrap"><button class="sb-item" data-page="wins-tracker" data-ctrl="" onclick="pick(this)">Wins Tracker</button><button class="fav-star" onclick="toggleFav('wins-tracker',event)">★</button></div>
+      </div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-hdr" onclick="toggleSec(this)">06 Goals &amp; Vision <span>▾</span></div>
+      <div class="sb-items">
+        <div class="sb-item-wrap"><button class="sb-item" data-page="life-compass" data-ctrl="year" onclick="pick(this)">Life Domains Compass</button><button class="fav-star" onclick="toggleFav('life-compass',event)">★</button></div>
+        <div class="sb-item-wrap"><button class="sb-item" data-page="annual-goals" data-ctrl="year" onclick="pick(this)">Annual Goals</button><button class="fav-star" onclick="toggleFav('annual-goals',event)">★</button></div>
+        <div class="sb-item-wrap"><button class="sb-item" data-page="goal-detail" data-ctrl="project" onclick="pick(this)">Goal Detail</button><button class="fav-star" onclick="toggleFav('goal-detail',event)">★</button></div>
+        <div class="sb-item-wrap"><button class="sb-item" data-page="quarterly-plan" data-ctrl="year,quarter" onclick="pick(this)">Quarterly Plan</button><button class="fav-star" onclick="toggleFav('quarterly-plan',event)">★</button></div>
+        <div class="sb-item-wrap"><button class="sb-item" data-page="quarterly-review" data-ctrl="year,quarter" onclick="pick(this)">Quarterly Review</button><button class="fav-star" onclick="toggleFav('quarterly-review',event)">★</button></div>
+        <div class="sb-item-wrap"><button class="sb-item" data-page="ideal-week" data-ctrl="" onclick="pick(this)">Ideal Week Template</button><button class="fav-star" onclick="toggleFav('ideal-week',event)">★</button></div>
+        <div class="sb-item-wrap"><button class="sb-item" data-page="someday-maybe" data-ctrl="" onclick="pick(this)">Someday / Maybe</button><button class="fav-star" onclick="toggleFav('someday-maybe',event)">★</button></div>
+      </div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-hdr" onclick="toggleSec(this)">07 Relationships <span>▾</span></div>
+      <div class="sb-items">
+        <div class="sb-item-wrap"><button class="sb-item" data-page="rel-roster" data-ctrl="" onclick="pick(this)">Relationship Roster</button><button class="fav-star" onclick="toggleFav('rel-roster',event)">★</button></div>
+        <div class="sb-item-wrap"><button class="sb-item" data-page="rel-profile" data-ctrl="person" onclick="pick(this)">Person Profile</button><button class="fav-star" onclick="toggleFav('rel-profile',event)">★</button></div>
+        <div class="sb-item-wrap"><button class="sb-item" data-page="rel-log" data-ctrl="person" onclick="pick(this)">Relationship Log</button><button class="fav-star" onclick="toggleFav('rel-log',event)">★</button></div>
+        <div class="sb-item-wrap"><button class="sb-item" data-page="rel-planner" data-ctrl="month" onclick="pick(this)">Relationship Planner</button><button class="fav-star" onclick="toggleFav('rel-planner',event)">★</button></div>
+      </div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-hdr" onclick="toggleSec(this)">Extras <span>▾</span></div>
+      <div class="sb-items">
+        <div class="sb-item-wrap"><button class="sb-item" data-page="travel-planner" data-ctrl="topic,date" onclick="pick(this)">Travel / Event Planner</button><button class="fav-star" onclick="toggleFav('travel-planner',event)">★</button></div>
+        <div class="sb-item-wrap"><button class="sb-item" data-page="health-log" data-ctrl="week" onclick="pick(this)">Health / Energy Log</button><button class="fav-star" onclick="toggleFav('health-log',event)">★</button></div>
+        <div class="sb-item-wrap"><button class="sb-item" data-page="divider-page" data-ctrl="topic" onclick="pick(this)">Divider / Section Tab</button><button class="fav-star" onclick="toggleFav('divider-page',event)">★</button></div>
+        <div class="sb-item-wrap"><button class="sb-item" data-page="habit-tracker" data-ctrl="month" onclick="pick(this)">Habit / Goal Tracker</button><button class="fav-star" onclick="toggleFav('habit-tracker',event)">★</button></div>
+        <div class="sb-item-wrap"><button class="sb-item" data-page="notes-page" data-ctrl="" onclick="pick(this)">Notes Page</button><button class="fav-star" onclick="toggleFav('notes-page',event)">★</button></div>
+        <div class="sb-item-wrap"><button class="sb-item" data-page="bible-plan" data-ctrl="" onclick="pick(this)">Bible Reading Plan</button><button class="fav-star" onclick="toggleFav('bible-plan',event)">★</button></div>
+      </div>
+    </div>
+
+    <div id="queue-section">
+      <div class="sb-section-hdr" onclick="toggleSec(this)">
+        Print Queue<span id="queue-badge" style="font-weight:400;color:#aaa"></span>
+        <span>▾</span>
+      </div>
+      <div style="padding:3px 10px;display:flex;gap:5px;align-items:center;border-bottom:1px solid #f0f0f0">
+        <span style="font-size:9px;color:#aaa;flex:1">Sides</span>
+        <div class="seg-ctrl" style="height:19px">
+          <label style="font-size:9px;padding:0 7px"><input type="radio" name="duplex" value="single" checked onchange="renderQueue()"> 1</label>
+          <label style="font-size:9px;padding:0 7px"><input type="radio" name="duplex" value="double" onchange="renderQueue()"> 2</label>
+        </div>
+        <label style="font-size:9px;color:#aaa;display:flex;align-items:center;gap:3px">
+          <input type="checkbox" id="inp-page-nums" style="width:auto;height:auto"> Pg #
+        </label>
+      </div>
+      <div id="preset-section" style="border-bottom:1px solid #f0f0f0;padding:4px 8px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:9px;color:#aaa">Saved Presets</span>
+          <button class="btn" style="font-size:9px;padding:1px 6px;height:20px" onclick="savePreset()">Save</button>
+        </div>
+        <div id="preset-list"></div>
+      </div>
+      <div class="sb-items">
+        <div id="queue-empty">Queue is empty</div>
+        <div id="queue-list"></div>
+      </div>
+      <div id="queue-summary" style="display:none"></div>
+      <div id="queue-btns" style="display:none">
+        <button onclick="addBlankToQueue()" class="btn" style="width:100%;font-size:10px">+ Blank Page</button>
+        <button onclick="addWeekBundle()" class="btn" style="width:100%;font-size:10px">+ Week Bundle</button>
+        <button onclick="printQueueItems()" class="btn btn-primary" style="width:100%;font-size:10px">Print Queue</button>
+        <button onclick="clearQueue()" class="btn" style="width:100%;font-size:10px">Clear All</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="preview-area" style="position:relative">
+    <button id="btn-margins" onclick="toggleMargins()" title="Show/hide margin guides" style="position:absolute;top:8px;right:8px;z-index:10;font-size:9px;padding:2px 7px;border:1px solid #ddd;border-radius:3px;background:#fff;cursor:pointer;color:#999">Guides</button>
+    <div id="preview-wrapper"></div>
+  </div>
+</div>
+
+<script>
+// ── UTILITIES ──────────────────────────────────────────────────────────────
+
+const MONTHS = ['January','February','March','April','May','June',
+                'July','August','September','October','November','December'];
+const DAYS_L = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const DAYS_S = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+function today() { return new Date(); }
+
+function pad(n) { return String(n).padStart(2, '0'); }
+
+function addDays(d, n) {
+  const r = new Date(d); r.setDate(r.getDate() + n); return r;
+}
+
+function daysInMonth(y, m) { return new Date(y, m + 1, 0).getDate(); }
+function firstDow(y, m)    { return new Date(y, m, 1).getDay(); } // 0=Sun
+
+function fmtLong(d) {
+  return `${DAYS_L[d.getDay()]}, ${MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+}
+function fmtShort(d) { return `${MONTHS[d.getMonth()].slice(0,3)} ${d.getDate()}`; }
+
+function parseDate(v) {
+  if (!v) { const t = today(); return new Date(t.getFullYear(), t.getMonth(), t.getDate()); }
+  const [y,m,d] = v.split('-').map(Number); return new Date(y, m-1, d);
+}
+
+function parseMonth(v) {
+  if (!v) { const t = today(); return { y: t.getFullYear(), m: t.getMonth() }; }
+  const [y,m] = v.split('-').map(Number); return { y, m: m-1 };
+}
+
+function weekMonday(d) {
+  const day = d.getDay(); // 0=Sun
+  const diff = day === 0 ? -6 : 1 - day;
+  return addDays(d, diff);
+}
+
+function parseWeek(v) {
+  // v = "YYYY-Www"
+  if (!v) return weekMonday(today());
+  const [ys, ws] = v.split('-W');
+  const y = +ys, w = +ws;
+  // Jan 4 is always in week 1 (ISO)
+  const jan4 = new Date(y, 0, 4);
+  const jan4dow = jan4.getDay() || 7; // ISO Mon=1
+  const mon = new Date(jan4);
+  mon.setDate(jan4.getDate() - jan4dow + 1 + (w - 1) * 7);
+  return mon;
+}
+
+function isoWeekStr(d) {
+  const utc = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const dow = utc.getUTCDay() || 7;
+  utc.setUTCDate(utc.getUTCDate() + 4 - dow); // Thursday of ISO week
+  const yearStart = new Date(Date.UTC(utc.getUTCFullYear(), 0, 1));
+  const wk = Math.ceil(((utc - yearStart) / 86400000 + 1) / 7);
+  const mon = weekMonday(d);
+  return `${mon.getFullYear()}-W${pad(wk)}`;
+}
+
+function fmt12(h, min) {
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const h12 = h > 12 ? h - 12 : (h === 0 ? 12 : h);
+  return `${h12}:${pad(min)} ${ampm}`;
+}
+
+// ── HTML BUILDERS ──────────────────────────────────────────────────────────
+
+function wlines(n) {
+  return Array(n).fill('<div class="wline"></div>').join('');
+}
+function cbrows(n) {
+  return Array(n).fill('<div class="cb-row"><div class="cb"></div><div class="cb-fill"></div></div>').join('');
+}
+function numrows(n, start=1) {
+  return Array.from({length:n}, (_,i) =>
+    `<div class="num-row"><span class="num-lbl">${i+start}.</span><div class="num-fill"></div></div>`
+  ).join('');
+}
+function flexrows(n, cls='flex-wline') {
+  // Lines that stretch via flex-1 — for fill sections
+  return `<div style="flex:1;display:flex;flex-direction:column;min-height:0">${
+    Array(n).fill(`<div style="flex:1;border-bottom:0.5px solid #ccc;min-height:0"></div>`).join('')
+  }</div>`;
+}
+function trows(n, cols) {
+  return Array(n).fill(`<tr>${cols.map(w => `<td${w ? ` style="width:${w}"` : ''}></td>`).join('')}</tr>`).join('');
+}
+
+// ── PAGE RENDERERS ─────────────────────────────────────────────────────────
+
+function isUndated() {
+  return document.getElementById('inp-undated').checked;
+}
+function pgDate(str) {
+  return isUndated() ? '' : `<span class="pg-date">${str}</span>`;
+}
+
+function pgMonthlyCalendar() {
+  const {y, m} = parseMonth(document.getElementById('inp-month').value);
+  const fd = firstDow(y, m);
+  const dim = daysInMonth(y, m);
+  const nWeeks = Math.ceil((fd + dim) / 7);
+  let rows = '';
+  for (let w = 0; w < nWeeks; w++) {
+    let cells = '';
+    for (let d = 0; d < 7; d++) {
+      const dn = w*7 + d - fd + 1;
+      if (dn < 1 || dn > dim) {
+        cells += '<div class="cal-cell empty"></div>';
+      } else {
+        cells += `<div class="cal-cell"><div class="cal-num">${dn}</div><div class="cal-line"></div><div class="cal-line"></div><div class="cal-line"></div></div>`;
+      }
+    }
+    rows += `<div class="cal-row">${cells}</div>`;
+  }
+  return `<div class="planner-page"><div class="page-inner">
+    <div class="pg-title">${MONTHS[m].toUpperCase()}${pgDate(y)}</div>
+    <div class="cal-grid">
+      <div class="cal-hdr-row">${DAYS_S.map(d=>`<div class="cal-hdr-cell">${d}</div>`).join('')}</div>
+      ${rows}
+    </div>
+  </div></div>`;
+}
+
+function pgAnnualDeadlines() {
+  const y = parseInt(document.getElementById('inp-year').value) || today().getFullYear();
+  const rows = trows(34, ['0.8in','','1.3in']);
+  return `<div class="planner-page"><div class="page-inner">
+    <div class="pg-title">ANNUAL DEADLINES &amp; IMPORTANT DATES${pgDate(y)}</div>
+    <table class="pt" style="flex:1">
+      <thead><tr><th style="width:0.8in">Month</th><th>Event / Deadline</th><th style="width:1.3in">Notes</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div></div>`;
+}
+
+function pgBrainDump() {
+  return `<div class="planner-page"><div class="page-inner">
+    <div class="pg-title">INBOX / BRAIN DUMP</div>
+    ${flexrows(32)}
+  </div></div>`;
+}
+
+function pgWeeklyCC() {
+  const mon = parseWeek(document.getElementById('inp-week').value);
+  const wdays = Array.from({length:5}, (_,i) => ({ s: DAYS_S[i+1], d: addDays(mon, i) }));
+  const sat = addDays(mon, 5), sun = addDays(mon, 6), fri = addDays(mon, 4);
+
+  const dayCols = wdays.map(({s,d}) => `
+    <div class="wcc-col">
+      <div class="wcc-col-hdr">${s}${isUndated() ? '' : `<span class="wcc-col-date">${fmtShort(d)}</span>`}</div>
+      <div class="wcc-lines">${Array(14).fill('<div class="wcc-line"></div>').join('')}</div>
+    </div>`).join('');
+
+  const wkendCol = `
+    <div class="wcc-col" style="flex:0 0 1.05in">
+      <div class="wcc-col-hdr">Sat/Sun${isUndated() ? '' : `<span class="wcc-col-date">${fmtShort(sat)}·${fmtShort(sun)}</span>`}</div>
+      <div class="wcc-lines">${Array(14).fill('<div class="wcc-line"></div>').join('')}</div>
+    </div>`;
+
+  return `<div class="planner-page"><div class="page-inner">
+    <div class="pg-title">WEEKLY COMMAND CENTER
+      ${pgDate(`Week of ${fmtShort(mon)} – ${fmtShort(sun)}, ${sun.getFullYear()}`)}
+    </div>
+    <div class="sec-label">Weekly Big 3 — Non-Negotiable Outcomes</div>
+    <div class="box-border">${numrows(3)}</div>
+    <div class="sec-label">Master Task Pool</div>
+    <div class="wcc-pool">${dayCols}${wkendCol}</div>
+    <div class="wcc-bottom">
+      <div class="wcc-bl">
+        <div class="sec-label">People &amp; Delegation</div>
+        <table class="pt" style="flex:1">
+          <thead><tr><th style="width:1.1in">Person</th><th>Waiting On</th><th style="width:0.65in">Due</th></tr></thead>
+          <tbody>${trows(8, ['1.1in','','0.65in'])}</tbody>
+        </table>
+      </div>
+      <div class="wcc-br">
+        <div class="sec-label">Critical Deadlines</div>
+        <table class="pt" style="flex:1">
+          <thead><tr><th style="width:0.6in">Date</th><th>Item</th></tr></thead>
+          <tbody>${trows(8, ['0.6in',''])}</tbody>
+        </table>
+      </div>
+    </div>
+  </div></div>`;
+}
+
+function pgDailySlip(date) {
+  const d = date || parseDate(document.getElementById('inp-date').value);
+
+  const startH    = parseInt(document.getElementById('inp-start-time').value) || 8;
+  const endH      = parseInt(document.getElementById('inp-end-time').value)   || 17;
+  const slotMins  = parseInt(document.getElementById('inp-slot-size').value)  || 30;
+  const showInt   = document.getElementById('inp-show-interrupt').checked;
+  const rightMode = document.querySelector('input[name="daily-right"]:checked').value;
+  const tasksN    = Math.max(1, parseInt(document.getElementById('inp-tasks').value) || 10);
+  const showMorn  = document.getElementById('inp-rtn-morning').checked;
+  const showStart = document.getElementById('inp-rtn-startup').checked;
+  const showStop  = document.getElementById('inp-rtn-shutdown').checked;
+  const showEven  = document.getElementById('inp-rtn-evening').checked;
+
+  // ── Schedule column ──
+  let timeRows = '';
+  // endH is the end of the day, so the last hour block is endH-1 (no empty row at the end time)
+  for (let h = startH; h < endH; h++) {
+    timeRows += `<div class="trow hr"><span class="tlbl">${fmt12(h,0)}</span><div class="tline"></div></div>`;
+    if (slotMins === 30) {
+      timeRows += `<div class="trow"><span class="tlbl">${h > 12 ? h - 12 : h}:30</span><div class="tline"></div></div>`;
+    }
+  }
+
+  // ── Single-bubble routine row ──
+  const rtnSec = label =>
+    `<div class="rtn-row" style="flex-shrink:0"><div class="rtn-cb"></div>
+      <span style="font-size:5.5pt;color:#aaa;letter-spacing:0.1em;text-transform:uppercase">${label}</span></div>`;
+
+  const topRtns = (showMorn ? rtnSec('Morning Routine') : '') + (showStart ? rtnSec('Workday Startup') : '');
+  const botRtns = (showStop ? rtnSec('Workday Shutdown') : '') + (showEven ? rtnSec('Evening Routine') : '');
+
+  // Notes auto-fills remaining space — overflow clipped by the flex:1 wrapper
+  const notesFill = `<div style="flex:1;min-height:0;overflow:hidden">
+    <div class="sec-label" style="margin-top:5pt">Notes</div>${wlines(40)}</div>`;
+
+  let rightHtml;
+  if (rightMode === 'tasks') {
+    rightHtml = `${topRtns}
+      <div style="flex-shrink:0"><div class="sec-label">Tasks</div>${cbrows(tasksN)}</div>
+      ${botRtns}`;
+  } else if (rightMode === 'notes') {
+    rightHtml = `${topRtns}
+      <div style="flex:1;min-height:0;overflow:hidden">
+        <div class="sec-label">Notes</div>${wlines(40)}</div>
+      ${botRtns}`;
+  } else {
+    const intHtml = showInt
+      ? `<div style="flex-shrink:0"><div class="sec-label" style="margin-top:5pt">Interruption Log</div>${cbrows(7)}</div>`
+      : '';
+    rightHtml = `${topRtns}
+      <div style="flex-shrink:0"><div class="sec-label">Other Tasks</div>${cbrows(tasksN)}</div>
+      ${intHtml}
+      ${notesFill}
+      ${botRtns}`;
+  }
+
+  return `<div class="planner-page"><div class="page-inner">
+    <div class="pg-title">DAILY EXECUTION${pgDate(fmtLong(d))}</div>
+    <div class="sec-label">Daily Big 3</div>
+    <div class="box-border">${cbrows(3)}</div>
+    <div class="des-body">
+      <div class="des-left">
+        <div class="sec-label">Schedule</div>
+        <div class="time-rows">${timeRows}</div>
+      </div>
+      <div class="des-right">${rightHtml}</div>
+    </div>
+  </div></div>`;
+}
+
+function pgWeeklyPlan() {
+  const mon = parseWeek(document.getElementById('inp-week').value);
+  const sun = addDays(mon, 6);
+
+  const dayDefs = [
+    { name: 'Monday',    d: addDays(mon, 0) },
+    { name: 'Tuesday',   d: addDays(mon, 1) },
+    { name: 'Wednesday', d: addDays(mon, 2) },
+    { name: 'Thursday',  d: addDays(mon, 3) },
+    { name: 'Friday',    d: addDays(mon, 4) },
+    { name: 'Sat / Sun', d: addDays(mon, 5), end: sun },
+  ];
+
+  function dayCell(def) {
+    const dateLbl = isUndated() ? '' : def.end
+      ? `${fmtShort(def.d)} · ${fmtShort(def.end)}`
+      : fmtShort(def.d);
+    return `<div class="wp-cell">
+      <div class="wp-cell-hdr">${def.name}${dateLbl ? `<span class="wp-cell-date">${dateLbl}</span>` : ''}</div>
+      <div class="wp-cell-lines">${wlines(10)}</div>
+    </div>`;
+  }
+
+  const row1 = dayDefs.slice(0, 3).map(dayCell).join('');
+  const row2 = dayDefs.slice(3, 6).map(dayCell).join('');
+
+  // Two-column checkbox pool — 10 rows each
+  const poolCol = cbrows(10);
+
+  return `<div class="planner-page"><div class="page-inner">
+    <div class="pg-title">WEEKLY PLAN
+      ${pgDate(`Week of ${fmtShort(mon)} – ${fmtShort(sun)}, ${sun.getFullYear()}`)}
+    </div>
+    <div class="wp-big3">
+      <span class="sec-label" style="margin:0;white-space:nowrap;margin-right:6pt">Weekly Big 3</span>
+      <span class="wp-b3">1.<span class="wp-b3-line"></span></span>
+      <span class="wp-b3">2.<span class="wp-b3-line"></span></span>
+      <span class="wp-b3">3.<span class="wp-b3-line"></span></span>
+    </div>
+    <div class="wp-grid">
+      <div class="wp-row">${row1}</div>
+      <div class="wp-row">${row2}</div>
+    </div>
+    <div class="sec-label">Unassigned / Not Yet Scheduled</div>
+    <div class="wp-pool">
+      <div class="wp-pool-col">${poolCol}</div>
+      <div class="wp-pool-col">${poolCol}</div>
+    </div>
+  </div></div>`;
+}
+
+function pgWeeklyReview() {
+  const mon = parseWeek(document.getElementById('inp-week').value);
+  const sun = addDays(mon, 6);
+  return `<div class="planner-page"><div class="page-inner">
+    <div class="pg-title">WEEKLY REVIEW
+      ${pgDate(`Week of ${fmtShort(mon)} – ${fmtShort(sun)}, ${sun.getFullYear()}`)}
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;gap:8pt;min-height:0">
+      <div><div class="sec-label">Wins &amp; Accomplishments</div>${wlines(5)}</div>
+      <div><div class="sec-label">What Didn't Work / Lessons Learned</div>${wlines(5)}</div>
+      <div>
+        <div class="sec-label">Tasks to Carry Forward</div>
+        <div class="wp-pool"><div class="wp-pool-col">${cbrows(8)}</div><div class="wp-pool-col">${cbrows(8)}</div></div>
+      </div>
+      <div><div class="sec-label">Next Week — Top 3 Focuses</div><div class="box-border" style="margin-bottom:0">${numrows(3)}</div></div>
+      <div style="flex:1;min-height:0;overflow:hidden"><div class="sec-label">Energy / Reflection</div>${wlines(20)}</div>
+    </div>
+  </div></div>`;
+}
+
+function pgProjectDashboard() {
+  const proj = document.getElementById('inp-project').value.trim();
+  return `<div class="planner-page"><div class="page-inner">
+    <div class="pg-title">PROJECT DASHBOARD<span class="pg-date">${proj ? proj.toUpperCase() : '&nbsp;'}</span></div>
+    <div style="flex:1;display:flex;flex-direction:column;gap:7pt;min-height:0">
+      <div><div class="sec-label">Definition of Done</div>${wlines(3)}</div>
+      <div><div class="sec-label">Purpose / Objective</div>${wlines(3)}</div>
+      <div>
+        <div class="sec-label">Key Stakeholders</div>
+        <table class="pt">
+          <thead><tr><th>Name</th><th>Role</th><th style="width:1.7in">Contact</th></tr></thead>
+          <tbody>${trows(5, ['','','1.7in'])}</tbody>
+        </table>
+      </div>
+      <div><div class="sec-label">Resources &amp; Constraints</div>${wlines(3)}</div>
+      <div style="display:flex;gap:10pt">
+        <div style="flex:1"><div class="sec-label">Status</div>${wlines(2)}</div>
+        <div style="flex:0 0 1.35in"><div class="sec-label">Start Date</div>${wlines(1)}</div>
+        <div style="flex:0 0 1.5in"><div class="sec-label">Target Completion</div>${wlines(1)}</div>
+      </div>
+      <div><div class="sec-label">Notes</div>${wlines(8)}</div>
+    </div>
+  </div></div>`;
+}
+
+function pgProjectLog() {
+  const proj = document.getElementById('inp-project').value.trim();
+  let rows = '';
+  for (let i = 0; i < 22; i++) {
+    rows += `<div style="flex:1;display:flex;min-height:0;border-bottom:0.5px solid #e8e8e8">
+      <div style="width:0.65in;flex-shrink:0;border-right:1px solid #ddd"></div>
+      <div style="width:0.32in;flex-shrink:0;border-right:0.5px solid #efefef"></div>
+      <div style="flex:1"></div>
+    </div>`;
+  }
+  return `<div class="planner-page"><div class="page-inner">
+    <div class="pg-title">PROJECT LOG<span class="pg-date">${proj ? proj.toUpperCase() : '&nbsp;'}</span></div>
+    <div style="display:flex;gap:10pt;flex-shrink:0;margin-bottom:5pt">
+      <div style="flex:1"><div class="sec-label">Current Status / Focus</div>${wlines(2)}</div>
+      <div style="flex:1"><div class="sec-label">Active Blockers</div>${wlines(2)}</div>
+    </div>
+    <div style="display:flex;flex-shrink:0;border-bottom:1px solid #999;padding-bottom:2pt">
+      <div style="width:0.65in;flex-shrink:0;font-size:5.5pt;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#888;text-align:right;padding-right:4pt">Date</div>
+      <div style="width:0.32in;flex-shrink:0"></div>
+      <div style="flex:1;font-size:5.5pt;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#888;padding-left:6pt">Task / Note / Decision</div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;min-height:0">${rows}</div>
+    <div style="font-size:5.5pt;color:#bbb;margin-top:3pt;flex-shrink:0">Updated: _______________</div>
+  </div></div>`;
+}
+
+function pgMilestoneTracker() {
+  const proj = document.getElementById('inp-project').value.trim();
+  let rows = '';
+  for (let i = 1; i <= 10; i++) {
+    rows += `<tr><td style="width:18px;text-align:center;color:#ccc;font-size:7pt">${i}</td><td></td><td style="width:0.78in"></td><td style="width:0.78in"></td><td style="width:1.15in"></td></tr>`;
+  }
+  return `<div class="planner-page"><div class="page-inner">
+    <div class="pg-title">MILESTONE TRACKER<span class="pg-date">${proj ? proj.toUpperCase() : '&nbsp;'}</span></div>
+    <table class="pt" style="margin-bottom:8pt">
+      <thead><tr>
+        <th style="width:18px">#</th><th>Milestone</th>
+        <th style="width:0.78in">Target</th><th style="width:0.78in">Completed</th>
+        <th style="width:1.15in">Notes / Initials</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div>
+      <div class="sec-label">Notes &amp; Context</div>
+      ${wlines(12)}
+    </div>
+  </div></div>`;
+}
+
+function pgNextActions() {
+  const proj = document.getElementById('inp-project').value.trim();
+  return `<div class="planner-page"><div class="page-inner">
+    <div class="pg-title">NEXT ACTION LIST<span class="pg-date">${proj ? proj.toUpperCase() : '&nbsp;'}</span></div>
+    <div class="sec-label">Next Action</div>
+    <div style="border:1.5px solid #888;padding:4pt 6pt;margin-bottom:9pt">
+      <div class="cb-row"><div class="cb"></div><div class="cb-fill"></div></div>
+    </div>
+    <div class="sec-label">All Actions</div>
+    <div style="flex:1;display:flex;flex-direction:column;min-height:0">
+      ${cbrows(24)}
+      <div style="flex:1"></div>
+    </div>
+    <div style="font-size:5.5pt;color:#bbb;margin-top:4pt">Date updated: _______________</div>
+  </div></div>`;
+}
+
+function pgWaitingOn() {
+  return `<div class="planner-page"><div class="page-inner">
+    <div class="pg-title">WAITING ON LOG</div>
+    <table class="pt" style="flex:1">
+      <thead><tr>
+        <th style="width:0.65in">Date</th><th style="width:1.15in">Person</th>
+        <th>Item</th><th style="width:0.72in">Follow-up</th><th style="width:0.62in">Resolved</th>
+      </tr></thead>
+      <tbody>${trows(30, ['0.65in','1.15in','','0.72in','0.62in'])}</tbody>
+    </table>
+  </div></div>`;
+}
+
+function pgOneOnOne() {
+  const person = document.getElementById('inp-person').value.trim() || '_______________';
+  return `<div class="planner-page"><div class="page-inner">
+    <div class="pg-title">1:1 MEETING<span class="pg-date">${person}</span></div>
+    <div style="font-size:6.5pt;color:#aaa;margin-bottom:8pt">Date: _______________ &nbsp;&nbsp;&nbsp; Recurring: Y / N &nbsp;&nbsp;&nbsp; Cadence: _______________</div>
+    <div style="flex:1;display:flex;flex-direction:column;gap:7pt;min-height:0">
+      <div><div class="sec-label">Discussion Points</div>${cbrows(8)}</div>
+      <div><div class="sec-label">Agreed Actions</div>${cbrows(8)}</div>
+      <div><div class="sec-label">Their Feedback / My Notes</div>${wlines(5)}</div>
+      <div><div class="sec-label">Follow-up Before Next Meeting</div>${cbrows(4)}</div>
+    </div>
+  </div></div>`;
+}
+
+function pgSOPRef() {
+  const topic = document.getElementById('inp-topic').value.trim();
+  return `<div class="planner-page"><div class="page-inner">
+    <div class="pg-title">SOP / TECHNICAL REFERENCE<span class="pg-date">${topic ? topic.toUpperCase() : '&nbsp;'}</span></div>
+    <div style="flex:1;display:flex;flex-direction:column;gap:7pt;min-height:0">
+      <div><div class="sec-label">Purpose</div>${wlines(3)}</div>
+      <div style="flex:1;display:flex;flex-direction:column;min-height:0">
+        <div class="sec-label">Steps / Procedure</div>
+        ${numrows(18)}
+        <div style="flex:1"></div>
+      </div>
+      <div><div class="sec-label">Notes / Exceptions</div>${wlines(4)}</div>
+      <div style="font-size:5.5pt;color:#bbb">Last Updated: _______________ &nbsp;&nbsp; Owner: _______________</div>
+    </div>
+  </div></div>`;
+}
+
+function pgWinsTracker() {
+  return `<div class="planner-page"><div class="page-inner">
+    <div class="pg-title">PROFESSIONAL WINS TRACKER</div>
+    <table class="pt" style="flex:1">
+      <thead><tr><th style="width:0.68in">Date</th><th>Achievement / Win</th><th style="width:1.9in">Context / Impact</th></tr></thead>
+      <tbody>${trows(30, ['0.68in','','1.9in'])}</tbody>
+    </table>
+  </div></div>`;
+}
+
+function pgHabitTracker() {
+  const {y, m} = parseMonth(document.getElementById('inp-month').value);
+  const dim = daysInMonth(y, m);
+  const dayHdrs = Array.from({length:dim}, (_,i) =>
+    `<div style="flex:1;text-align:center;font-size:4.5pt;color:#aaa;padding:2.5pt 0;border-left:0.5px solid #ddd">${i+1}</div>`
+  ).join('');
+  const checkbox = `<div style="width:6pt;height:6pt;border:0.75px solid #ccc;flex-shrink:0"></div>`;
+  const dayCells = Array(dim).fill(
+    `<div style="flex:1;border-left:0.5px solid #f0f0f0;display:flex;align-items:center;justify-content:center">${checkbox}</div>`
+  ).join('');
+  const rows = Array.from({length:28}, (_,i) => {
+    const sep = (i + 1) % 5 === 0;
+    return `<div style="flex:1;display:flex;border-bottom:0.5px solid ${sep ? '#ccc' : '#eeeeee'};min-height:0">
+      <div style="width:1.3in;flex-shrink:0;border-right:1px solid #ccc"></div>
+      ${dayCells}
+    </div>`;
+  }).join('');
+  return `<div class="planner-page"><div class="page-inner">
+    <div class="pg-title">HABIT / GOAL TRACKER${pgDate(`${MONTHS[m].toUpperCase()} ${y}`)}</div>
+    <div style="flex:1;display:flex;flex-direction:column;border:0.5px solid #ccc;min-height:0">
+      <div style="display:flex;border-bottom:1px solid #bbb;flex-shrink:0">
+        <div style="width:1.3in;flex-shrink:0;border-right:1px solid #ccc;font-size:5.5pt;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#888;padding:2.5pt 4pt">Habit / Goal</div>
+        ${dayHdrs}
+      </div>
+      ${rows}
+    </div>
+  </div></div>`;
+}
+
+function pgNotesPage() {
+  return `<div class="planner-page"><div class="page-inner">
+    <div style="display:flex;gap:20pt;margin-bottom:5pt;flex-shrink:0">
+      <div style="flex:1"><div class="sec-label">Title</div><div class="wline"></div></div>
+      <div style="flex:0 0 1.6in"><div class="sec-label">Date</div><div class="wline"></div></div>
+    </div>
+    ${flexrows(31)}
+  </div></div>`;
+}
+
+function pgProjectList() {
+  // Status key: A=Active, H=Hold, W=Waiting, C=Complete
+  let rows = '';
+  for (let i = 1; i <= 20; i++) {
+    rows += `<tr>
+      <td style="width:18px;text-align:center;color:#ccc;font-size:7pt">${i}</td>
+      <td style="width:1.75in"></td>
+      <td style="width:0.58in;text-align:center"></td>
+      <td></td>
+      <td style="width:0.65in"></td>
+      <td style="width:1.1in"></td>
+    </tr>`;
+  }
+  return `<div class="planner-page"><div class="page-inner">
+    <div class="pg-title">PROJECT LIST</div>
+    <table class="pt" style="flex:1">
+      <thead><tr>
+        <th style="width:18px">#</th>
+        <th style="width:1.75in">Project</th>
+        <th style="width:0.58in;text-align:center">Status</th>
+        <th>Next Action</th>
+        <th style="width:0.65in">Target</th>
+        <th style="width:1.1in">Notes</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div style="font-size:5.5pt;color:#bbb;margin-top:5pt;letter-spacing:0.06em">
+      STATUS: &nbsp; A = Active &nbsp;&nbsp; H = On Hold &nbsp;&nbsp; W = Waiting on Someone &nbsp;&nbsp; C = Complete
+    </div>
+  </div></div>`;
+}
+
+function pgMeetingLog() {
+  const person = document.getElementById('inp-person').value.trim();
+  // 32 rows in 7 groups of ~4-5, with a bolder divider every 4 rows
+  let rows = '';
+  for (let i = 0; i < 32; i++) {
+    const isGroupEnd = (i + 1) % 4 === 0 && i < 31;
+    rows += `<div style="flex:1;display:flex;min-height:0;border-bottom:${isGroupEnd ? '1px solid #aaa' : '0.5px solid #e8e8e8'}">
+      <div style="width:0.65in;flex-shrink:0;border-right:1px solid #ccc"></div>
+      <div style="flex:1"></div>
+    </div>`;
+  }
+  return `<div class="planner-page"><div class="page-inner">
+    <div class="pg-title">MEETING LOG<span class="pg-date">${person ? person.toUpperCase() : '&nbsp;'}</span></div>
+    <div style="display:flex;flex-shrink:0;border-bottom:1px solid #999;padding-bottom:2pt;margin-bottom:0">
+      <div style="width:0.65in;flex-shrink:0;font-size:5.5pt;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#888;padding-right:4pt;text-align:right">Date</div>
+      <div style="flex:1;font-size:5.5pt;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#888;padding-left:6pt">Notes / Discussion</div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;min-height:0">${rows}</div>
+  </div></div>`;
+}
+
+function pgMeetingNotes() {
+  const topic = document.getElementById('inp-topic').value.trim();
+  const d = parseDate(document.getElementById('inp-date').value);
+  const dateLine = isUndated() ? 'Date: _______________' : fmtLong(d);
+  return `<div class="planner-page"><div class="page-inner">
+    <div class="pg-title">MEETING NOTES<span class="pg-date">${topic || '&nbsp;'}</span></div>
+    <div style="font-size:6.5pt;color:#aaa;margin-bottom:5pt;flex-shrink:0">${dateLine} &nbsp;&nbsp;&nbsp; Time: _______________ &nbsp;&nbsp;&nbsp; Facilitator: _______________ &nbsp;&nbsp;&nbsp; Location / Link: _______________</div>
+    <div style="flex-shrink:0;margin-bottom:4pt">
+      <div class="sec-label">Attendees</div>${wlines(1)}
+    </div>
+    <div style="flex-shrink:0;margin-bottom:4pt">
+      <div class="sec-label">Objective / Purpose</div>${wlines(2)}
+    </div>
+    <div style="flex:1;min-height:0;overflow:hidden">
+      <div class="sec-label">Discussion Notes</div>${wlines(40)}
+    </div>
+    <div style="flex-shrink:0;margin-top:6pt;display:flex;gap:14pt">
+      <div style="flex:1">
+        <div class="sec-label">Key Decisions</div>${numrows(4)}
+      </div>
+      <div style="flex:1">
+        <div class="sec-label">Action Items</div>${cbrows(5)}
+      </div>
+    </div>
+    <div style="flex-shrink:0;margin-top:4pt">
+      <div class="sec-label">Next Steps / Follow-up</div>${wlines(1)}
+    </div>
+  </div></div>`;
+}
+
+// ── GOAL & VISION PAGES ───────────────────────────────────────────────────
+
+function pgLifeCompass() {
+  const y = parseInt(document.getElementById('inp-year').value) || today().getFullYear();
+  const domains = compassDomains;
+  const circles10 = Array(10).fill('<div style="width:7pt;height:7pt;border-radius:50%;border:0.75px solid #bbb;flex-shrink:0"></div>').join('');
+  const rows = domains.map(d => `
+    <div style="display:flex;align-items:stretch;border-bottom:0.5px solid #e0e0e0;min-height:0.73in">
+      <div style="width:1.5in;flex-shrink:0;font-size:7pt;font-weight:600;color:#222;line-height:1.35;display:flex;align-items:center;padding-right:6pt">${d}</div>
+      <div style="width:1.4in;flex-shrink:0;display:flex;flex-wrap:nowrap;gap:3pt;align-items:center;padding-right:8pt">${circles10}</div>
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:3pt">${wlines(2)}</div>
+    </div>`).join('');
+  return `<div class="planner-page"><div class="page-inner">
+    <div class="pg-title">LIFE DOMAINS COMPASS${pgDate(y)}</div>
+    <div style="font-size:6pt;color:#999;margin-bottom:5pt;flex-shrink:0">Shade the circles to score each domain 1–10. Write what a "10" looks like in that area of your life.</div>
+    <div style="display:flex;border-bottom:1px solid #999;padding-bottom:2pt;flex-shrink:0">
+      <div style="width:1.5in;flex-shrink:0"></div>
+      <div style="width:1.4in;flex-shrink:0;font-size:5.5pt;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#888">Score (shade)</div>
+      <div style="flex:1;font-size:5.5pt;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#888">What does a "10" look like?</div>
+    </div>
+    <div style="flex-shrink:0">${rows}</div>
+    <div style="flex:1;margin-top:8pt;min-height:0;overflow:hidden">
+      <div class="sec-label">This Year — Where I Will Focus My Growth</div>
+      ${wlines(20)}
+    </div>
+  </div></div>`;
+}
+
+function pgAnnualGoals() {
+  const y = parseInt(document.getElementById('inp-year').value) || today().getFullYear();
+  const slots = Array(7).fill(null).map((_, i) => `
+    <div style="border:0.5px solid #ddd;padding:4pt 6pt;margin-bottom:5pt;flex-shrink:0">
+      <div style="display:flex;align-items:flex-end;gap:5pt;margin-bottom:2pt">
+        <span style="font-size:8pt;font-weight:700;color:#ccc;flex-shrink:0;width:10px">${i+1}</span>
+        <div class="wline" style="flex:1"></div>
+        <span style="font-size:5.5pt;color:#bbb;flex-shrink:0">Domain</span>
+        <div class="wline" style="width:0.75in;flex-shrink:0"></div>
+        <span style="font-size:5.5pt;color:#bbb;flex-shrink:0">Target</span>
+        <div class="wline" style="width:0.6in;flex-shrink:0"></div>
+      </div>
+      <div style="display:flex;align-items:flex-end;gap:4pt;margin-bottom:2pt">
+        <span style="font-size:5.5pt;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#aaa;white-space:nowrap;margin-bottom:1px">Why</span>
+        <div class="wline" style="flex:1"></div>
+      </div>
+      <div style="display:flex;align-items:flex-end;gap:4pt">
+        <span style="font-size:5.5pt;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#aaa;white-space:nowrap;margin-bottom:1px">Done when</span>
+        <div class="wline" style="flex:1"></div>
+      </div>
+    </div>`).join('');
+  return `<div class="planner-page"><div class="page-inner">
+    <div class="pg-title">ANNUAL GOALS${pgDate(y)}</div>
+    <div style="font-size:6pt;color:#999;margin-bottom:7pt;flex-shrink:0">Choose up to 7 meaningful goals — one per key life domain. Each should have a clear outcome and a target date.</div>
+    ${slots}
+  </div></div>`;
+}
+
+function pgGoalDetail() {
+  const goal = document.getElementById('inp-project').value.trim();
+  const qBoxes = ['Q1','Q2','Q3','Q4'].map((q, i) => `
+    <div style="flex:1;${i < 3 ? 'border-right:0.5px solid #ddd;' : ''}padding:3pt 5pt">
+      <div style="font-size:6pt;font-weight:700;color:#aaa;letter-spacing:0.08em;margin-bottom:2pt">${q}</div>
+      ${wlines(3)}
+    </div>`).join('');
+  return `<div class="planner-page"><div class="page-inner">
+    <div class="pg-title">GOAL DETAIL<span class="pg-date">${goal ? goal.toUpperCase() : '&nbsp;'}</span></div>
+    <div style="flex:1;display:flex;flex-direction:column;gap:6pt;min-height:0">
+      <div style="display:flex;gap:10pt;flex-shrink:0">
+        <div style="flex:2"><div class="sec-label">Goal Statement</div>${wlines(1)}</div>
+        <div style="flex:1"><div class="sec-label">Domain</div>${wlines(1)}</div>
+        <div style="flex:1"><div class="sec-label">Target Date</div>${wlines(1)}</div>
+      </div>
+      <div><div class="sec-label">Why This Matters — Stakes (what changes if you do or don't achieve this?)</div>${wlines(4)}</div>
+      <div><div class="sec-label">Success Looks Like (specific, measurable outcome)</div>${wlines(2)}</div>
+      <div>
+        <div class="sec-label">Quarterly Targets</div>
+        <div style="display:flex;border:0.5px solid #ddd">${qBoxes}</div>
+      </div>
+      <div><div class="sec-label">Key Habits &amp; Supporting Behaviors</div>${cbrows(5)}</div>
+      <div style="display:flex;gap:10pt">
+        <div style="flex:1"><div class="sec-label">Potential Obstacles</div>${wlines(2)}</div>
+        <div style="flex:1"><div class="sec-label">How I'll Overcome Them</div>${wlines(2)}</div>
+      </div>
+      <div style="display:flex;gap:10pt">
+        <div style="flex:1"><div class="sec-label">Resources Needed</div>${wlines(2)}</div>
+        <div style="flex:1"><div class="sec-label">Celebration — When I achieve this, I will...</div>${wlines(2)}</div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;min-height:0">
+        <div class="sec-label">Progress Notes</div>
+        ${flexrows(5)}
+      </div>
+    </div>
+  </div></div>`;
+}
+
+function pgQuarterlyPlan() {
+  const y = parseInt(document.getElementById('inp-year').value) || today().getFullYear();
+  const q = parseInt(document.getElementById('inp-quarter').value) || 1;
+  const qMonths = [['January','February','March'],['April','May','June'],
+                   ['July','August','September'],['October','November','December']];
+  const months = qMonths[q - 1];
+  const domains = ['Career','Finance','Health','Relationships','Growth','Recreation','Purpose','Home'];
+  const scoreNums = n => Array.from({length:10},(_,i)=>`<span style="font-size:5.5pt;color:#ccc">${i+1}</span>`).join('<span style="font-size:4pt;color:#e0e0e0"> · </span>');
+
+  const domainRows = domains.map(d => `
+    <div style="display:flex;align-items:center;gap:5pt;border-bottom:0.5px solid #f0f0f0;height:0.275in">
+      <span style="font-size:6pt;color:#555;width:0.85in;flex-shrink:0">${d}</span>
+      <div>${scoreNums()}</div>
+    </div>`).join('');
+
+  const bigGoals = Array(3).fill(null).map((_, i) => `
+    <div style="display:flex;align-items:flex-end;gap:4pt;margin-bottom:3pt">
+      <span style="font-size:7pt;font-weight:700;color:#ccc;flex-shrink:0">${i+1}.</span>
+      <div class="wline" style="flex:1"></div>
+    </div>`).join('');
+
+  const monthCols = months.map((m, i) => `
+    <div style="flex:1;${i < 2 ? 'border-right:0.5px solid #ddd;' : ''}padding:4pt 6pt">
+      <div style="font-size:6.5pt;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#777;margin-bottom:3pt">${m}</div>
+      ${wlines(5)}
+    </div>`).join('');
+
+  return `<div class="planner-page"><div class="page-inner">
+    <div class="pg-title">QUARTERLY PLAN${pgDate(`Q${q} · ${y}`)}</div>
+    <div style="display:flex;gap:10pt;flex-shrink:0;margin-bottom:7pt">
+      <div style="flex:0 0 2.1in">
+        <div class="sec-label">Life Domain Scores</div>
+        <div style="font-size:5pt;color:#bbb;margin-bottom:3pt">Circle your current score (1–10)</div>
+        ${domainRows}
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:5pt">
+        <div><div class="sec-label">This Quarter's Big 3 Goals</div>${bigGoals}</div>
+        <div><div class="sec-label">Word / Theme for Q${q}</div>${wlines(1)}</div>
+        <div><div class="sec-label">What I'm Saying NO to This Quarter</div>${wlines(2)}</div>
+      </div>
+    </div>
+    <div style="flex-shrink:0;margin-bottom:7pt">
+      <div class="sec-label">Monthly Focus — How Each Goal Advances This Quarter</div>
+      <div style="display:flex;border:0.5px solid #ddd;margin-top:2pt">${monthCols}</div>
+    </div>
+    <div style="flex-shrink:0;margin-bottom:7pt">
+      <div class="sec-label">This Quarter I Will...</div>
+      <div style="display:flex;gap:10pt">
+        <div style="flex:1"><div style="font-size:6pt;color:#888;font-weight:600;letter-spacing:0.06em;margin-bottom:2pt">START</div>${cbrows(3)}</div>
+        <div style="flex:1"><div style="font-size:6pt;color:#888;font-weight:600;letter-spacing:0.06em;margin-bottom:2pt">STOP</div>${cbrows(3)}</div>
+        <div style="flex:1"><div style="font-size:6pt;color:#888;font-weight:600;letter-spacing:0.06em;margin-bottom:2pt">KEEP DOING</div>${cbrows(3)}</div>
+      </div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;min-height:0">
+      <div class="sec-label">Notes &amp; Commitments</div>
+      ${flexrows(8)}
+    </div>
+  </div></div>`;
+}
+
+function pgQuarterlyReview() {
+  const y = parseInt(document.getElementById('inp-year').value) || today().getFullYear();
+  const q = parseInt(document.getElementById('inp-quarter').value) || 1;
+  const domains = ['Career','Finance','Health','Relationships','Growth','Recreation','Purpose','Home'];
+  const scoreNums = Array.from({length:10},(_,i)=>`<span style="font-size:5.5pt;color:#ccc">${i+1}</span>`).join('<span style="font-size:4pt;color:#e0e0e0"> · </span>');
+
+  const domainRows = domains.map(d => `
+    <div style="display:flex;align-items:center;gap:5pt;border-bottom:0.5px solid #f0f0f0;height:0.275in">
+      <span style="font-size:6pt;color:#555;width:0.85in;flex-shrink:0">${d}</span>
+      <div>${scoreNums}</div>
+    </div>`).join('');
+
+  const goalCheck = Array(3).fill(null).map((_, i) => `
+    <div style="display:flex;align-items:center;gap:5pt;border-bottom:0.5px solid #eee;height:0.32in">
+      <span style="font-size:7pt;color:#ccc;flex-shrink:0">${i+1}.</span>
+      <div style="flex:1"></div>
+      <span style="font-size:5.5pt;color:#bbb;flex-shrink:0">☐ Full &nbsp;&nbsp; ☐ Partial &nbsp;&nbsp; ☐ No</span>
+    </div>`).join('');
+
+  return `<div class="planner-page"><div class="page-inner">
+    <div class="pg-title">QUARTERLY REVIEW${pgDate(`Q${q} · ${y}`)}</div>
+    <div style="display:flex;gap:10pt;flex-shrink:0;margin-bottom:6pt">
+      <div style="flex:0 0 2.1in">
+        <div class="sec-label">Life Domain Re-Score</div>
+        <div style="font-size:5pt;color:#bbb;margin-bottom:3pt">Circle your actual score this quarter</div>
+        ${domainRows}
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:5pt">
+        <div>
+          <div class="sec-label">Big 3 Goals — Did I Achieve Them?</div>
+          ${goalCheck}
+        </div>
+        <div>
+          <div class="sec-label">Overall Quarter Grade</div>
+          <div style="font-size:6.5pt;color:#bbb;letter-spacing:1pt">A+ &nbsp; A &nbsp; B+ &nbsp; B &nbsp; C+ &nbsp; C &nbsp; D &nbsp; F &nbsp; (circle one)</div>
+        </div>
+      </div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;gap:6pt;min-height:0">
+      <div><div class="sec-label">Wins &amp; Accomplishments</div>${wlines(4)}</div>
+      <div><div class="sec-label">What Didn't Work / What Got in the Way</div>${wlines(3)}</div>
+      <div><div class="sec-label">Key Lessons &amp; Insights</div>${wlines(3)}</div>
+      <div style="display:flex;gap:10pt">
+        <div style="flex:1"><div class="sec-label">More of Next Quarter</div>${wlines(2)}</div>
+        <div style="flex:1"><div class="sec-label">Less of Next Quarter</div>${wlines(2)}</div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;min-height:0">
+        <div class="sec-label">Carry-Forward Goals &amp; Notes</div>
+        ${cbrows(3)}
+        ${flexrows(4)}
+      </div>
+    </div>
+  </div></div>`;
+}
+
+function pgIdealWeek() {
+  const daysShort = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const blocks = Array(6).fill(null).map(() => `
+    <div style="flex:1;display:flex;border-bottom:0.5px solid #ddd;min-height:0">
+      <div style="width:0.75in;flex-shrink:0;border-right:0.5px solid #ccc;padding:2pt 3pt;display:flex;flex-direction:column;justify-content:flex-end">${wlines(2)}</div>
+      ${Array(7).fill('<div style="flex:1;border-right:0.5px solid #f0f0f0;padding:2pt 3pt;display:flex;flex-direction:column;justify-content:flex-end">' + wlines(2) + '</div>').join('')}
+    </div>`).join('');
+  return `<div class="planner-page"><div class="page-inner">
+    <div class="pg-title">IDEAL WEEK TEMPLATE</div>
+    <div style="font-size:6pt;color:#999;margin-bottom:5pt;flex-shrink:0">Design your ideal week. Label each time block on the left (e.g. "5–7 AM"). Note what belongs in each day's block. Post this where you plan each week.</div>
+    <div style="border:0.5px solid #ccc;flex:1;display:flex;flex-direction:column;min-height:0">
+      <div style="display:flex;border-bottom:1px solid #bbb;flex-shrink:0">
+        <div style="width:0.75in;flex-shrink:0;border-right:0.5px solid #ccc"></div>
+        ${daysShort.map(d=>`<div style="flex:1;text-align:center;font-size:6pt;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#777;padding:2.5pt 0;border-right:0.5px solid #eee">${d}</div>`).join('')}
+      </div>
+      ${blocks}
+    </div>
+    <div style="margin-top:5pt;flex-shrink:0">
+      <div class="sec-label">My Weekly Principles — What I'm Protecting</div>
+      ${wlines(3)}
+    </div>
+  </div></div>`;
+}
+
+function pgSomedayMaybe() {
+  const rows = Array(22).fill(null).map((_,i)=>`<tr>
+    <td style="width:16px;text-align:center;color:#ccc;font-size:7pt">${i+1}</td>
+    <td></td><td style="width:0.7in;text-align:center"></td>
+    <td style="width:0.8in;text-align:center"></td><td style="width:0.9in"></td></tr>`).join('');
+  return `<div class="planner-page"><div class="page-inner">
+    <div class="pg-title">SOMEDAY / MAYBE LIST</div>
+    <div style="font-size:6pt;color:#999;margin-bottom:5pt;flex-shrink:0">Goals and projects you want to pursue — just not right now. Review this list every quarter during your Quarterly Plan session.</div>
+    <table class="pt" style="flex:1">
+      <thead><tr>
+        <th style="width:16px">#</th><th>Goal / Project / Idea</th>
+        <th style="width:0.7in;text-align:center">Domain</th>
+        <th style="width:0.8in;text-align:center">Horizon</th>
+        <th style="width:0.9in">Notes</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div style="font-size:5.5pt;color:#bbb;margin-top:4pt;flex-shrink:0">Last reviewed: _______________ &nbsp;&nbsp;&nbsp; Next review: _______________</div>
+  </div></div>`;
+}
+
+// ── RELATIONSHIP PAGES ─────────────────────────────────────────────────────
+
+function pgRelRoster() {
+  const rows = Array(20).fill(null).map((_,i)=>`<tr>
+    <td style="width:16px;text-align:center;color:#ccc;font-size:7pt">${i+1}</td>
+    <td style="width:1.5in"></td><td style="width:0.9in;text-align:center"></td>
+    <td style="width:0.65in;text-align:center"></td><td style="width:0.65in;text-align:center"></td>
+    <td></td></tr>`).join('');
+  return `<div class="planner-page"><div class="page-inner">
+    <div class="pg-title">RELATIONSHIP ROSTER</div>
+    <div style="font-size:6pt;color:#999;margin-bottom:5pt;flex-shrink:0">Your key relationships — personal and professional. Invest intentionally. Review monthly.</div>
+    <table class="pt" style="flex:1">
+      <thead><tr>
+        <th style="width:16px">#</th><th style="width:1.5in">Name</th>
+        <th style="width:0.9in;text-align:center">Relationship</th>
+        <th style="width:0.65in;text-align:center">Last ✓</th>
+        <th style="width:0.65in;text-align:center">Next Up</th>
+        <th>Notes / Invest</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div style="font-size:5.5pt;color:#bbb;margin-top:4pt;flex-shrink:0">Cadence key: D = Daily · W = Weekly · M = Monthly · Q = Quarterly · A = Annual</div>
+  </div></div>`;
+}
+
+function pgRelProfile() {
+  const person = document.getElementById('inp-person').value.trim();
+  return `<div class="planner-page"><div class="page-inner">
+    <div class="pg-title">PERSON PROFILE<span class="pg-date">${person ? person.toUpperCase() : '&nbsp;'}</span></div>
+    <div style="flex:1;display:flex;flex-direction:column;gap:6pt;min-height:0">
+      <div style="display:flex;gap:10pt;flex-shrink:0">
+        <div style="flex:2"><div class="sec-label">Relationship / How We Met</div>${wlines(1)}</div>
+        <div style="flex:1"><div class="sec-label">Birthday</div>${wlines(1)}</div>
+        <div style="flex:1"><div class="sec-label">Contact Cadence</div>${wlines(1)}</div>
+      </div>
+      <div style="display:flex;gap:10pt">
+        <div style="flex:1"><div class="sec-label">What They Care About (values, interests, goals)</div>${wlines(4)}</div>
+        <div style="flex:1"><div class="sec-label">Life Context (work, family, location, situation)</div>${wlines(4)}</div>
+      </div>
+      <div><div class="sec-label">Important Dates &amp; Details to Remember</div>${wlines(3)}</div>
+      <div style="display:flex;gap:10pt">
+        <div style="flex:1"><div class="sec-label">How I Can Add Value to Their Life</div>${wlines(3)}</div>
+        <div style="flex:1"><div class="sec-label">Shared History / What We've Done Together</div>${wlines(3)}</div>
+      </div>
+      <div style="display:flex;gap:10pt">
+        <div style="flex:1"><div class="sec-label">What I Appreciate About Them</div>${wlines(3)}</div>
+        <div style="flex:1"><div class="sec-label">Goals for This Relationship</div>${wlines(3)}</div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;min-height:0">
+        <div class="sec-label">Notes</div>
+        ${flexrows(4)}
+      </div>
+    </div>
+  </div></div>`;
+}
+
+function pgRelLog() {
+  const person = document.getElementById('inp-person').value.trim();
+  let rows = '';
+  for (let i = 0; i < 28; i++) {
+    const isSep = (i + 1) % 4 === 0 && i < 27;
+    rows += `<div style="flex:1;display:flex;min-height:0;border-bottom:${isSep ? '1px solid #bbb' : '0.5px solid #ebebeb'}">
+      <div style="width:0.65in;flex-shrink:0;border-right:1px solid #ddd"></div>
+      <div style="width:24px;flex-shrink:0;border-right:0.5px solid #eee;display:flex;align-items:flex-start;justify-content:center;padding-top:2px">
+        <div style="width:7pt;height:7pt;border-radius:50%;border:0.75px solid #ddd;margin-top:2px"></div>
+      </div>
+      <div style="flex:1"></div>
+    </div>`;
+  }
+  return `<div class="planner-page"><div class="page-inner">
+    <div class="pg-title">RELATIONSHIP LOG<span class="pg-date">${person ? person.toUpperCase() : '&nbsp;'}</span></div>
+    <div style="display:flex;flex-shrink:0;border-bottom:1px solid #999;padding-bottom:2pt;margin-bottom:0">
+      <div style="width:0.65in;flex-shrink:0;font-size:5.5pt;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#888;text-align:right;padding-right:4pt">Date</div>
+      <div style="width:24px;flex-shrink:0;font-size:5.5pt;color:#bbb;text-align:center">♥</div>
+      <div style="flex:1;font-size:5.5pt;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#888;padding-left:6pt">Interaction / Investment / Note</div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;min-height:0">${rows}</div>
+    <div style="font-size:5.5pt;color:#bbb;margin-top:3pt;flex-shrink:0">♥ = Meaningful investment (circle when it's more than a check-in)</div>
+  </div></div>`;
+}
+
+function pgRelPlanner() {
+  const {y, m} = parseMonth(document.getElementById('inp-month').value);
+  const people = Array(8).fill(null).map((_, i) => `
+    <div style="display:flex;align-items:stretch;border-bottom:0.5px solid #e8e8e8;min-height:0.65in">
+      <div style="width:1.3in;flex-shrink:0;border-right:1px solid #ddd;padding:3pt 5pt;display:flex;flex-direction:column;justify-content:flex-end">${wlines(1)}</div>
+      <div style="width:1.1in;flex-shrink:0;border-right:0.5px solid #eee;padding:3pt 5pt;display:flex;flex-direction:column;justify-content:flex-end">${wlines(1)}</div>
+      <div style="flex:1;padding:3pt 5pt;display:flex;flex-direction:column;justify-content:flex-end">${wlines(1)}</div>
+    </div>`).join('');
+  return `<div class="planner-page"><div class="page-inner">
+    <div class="pg-title">RELATIONSHIP PLANNER${pgDate(`${MONTHS[m].toUpperCase()} ${y}`)}</div>
+    <div style="font-size:6pt;color:#999;margin-bottom:5pt;flex-shrink:0">Who will you invest in this month? Plan specific actions — not just check-ins, but meaningful gestures.</div>
+    <div style="display:flex;border-bottom:1px solid #999;padding-bottom:2pt;margin-bottom:0;flex-shrink:0">
+      <div style="width:1.3in;flex-shrink:0;font-size:5.5pt;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#888">Person</div>
+      <div style="width:1.1in;flex-shrink:0;font-size:5.5pt;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#888">How / What</div>
+      <div style="flex:1;font-size:5.5pt;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#888">Why / Notes</div>
+    </div>
+    <div style="flex-shrink:0">${people}</div>
+    <div style="flex:1;display:flex;flex-direction:column;min-height:0;margin-top:8pt;gap:6pt">
+      <div style="flex-shrink:0">
+        <div class="sec-label">Relationship Goals This Month</div>
+        ${wlines(3)}
+      </div>
+      <div style="flex-shrink:0">
+        <div class="sec-label">Who Needs My Attention — But I've Been Neglecting</div>
+        ${wlines(2)}
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;min-height:0">
+        <div class="sec-label">Notes</div>
+        ${flexrows(4)}
+      </div>
+    </div>
+  </div></div>`;
+}
+
+// ── EXTRAS ─────────────────────────────────────────────────────────────────
+
+function pgDividerPage() {
+  const title = document.getElementById('inp-topic').value.trim();
+  return `<div class="planner-page"><div class="page-inner" style="justify-content:center;align-items:center">
+    <div style="text-align:center;width:100%">
+      <div style="border-top:2px solid #222;border-bottom:2px solid #222;padding:18pt 0;margin:0 0.5in">
+        <div style="font-size:28pt;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#111;line-height:1.1">${title || '&nbsp;'}</div>
+      </div>
+    </div>
+  </div></div>`;
+}
+
+// ── NEW PAGE FUNCTIONS ─────────────────────────────────────────────────────
+
+function pgFocusBlock() {
+  const d = parseDate(document.getElementById('inp-date').value);
+  const blockNames = ['Morning Focus Block','Midday Focus Block','Afternoon Focus Block','Evening Focus Block'];
+  const blocks = blockNames.map(name => `
+    <div style="flex:1;display:flex;flex-direction:column;min-height:0;border-bottom:0.5px solid #ddd;padding-bottom:5pt;padding-top:5pt">
+      <div class="sec-label">${name}</div>
+      <div style="display:flex;gap:8pt;flex-shrink:0;margin-bottom:2pt">
+        <div style="flex:0 0 0.6in;font-size:5.5pt;color:#aaa;padding-top:2px">Time</div>
+        <div class="wline" style="flex:1"></div>
+      </div>
+      <div style="display:flex;gap:8pt;flex-shrink:0;margin-bottom:2pt">
+        <div style="flex:0 0 0.6in;font-size:5.5pt;color:#aaa;padding-top:2px">Intention</div>
+        <div class="wline" style="flex:1"></div>
+      </div>
+      <div style="display:flex;gap:8pt;flex-shrink:0;margin-bottom:2pt">
+        <div style="flex:0 0 0.6in;font-size:5.5pt;color:#aaa;padding-top:2px">Output</div>
+        <div class="wline" style="flex:1"></div>
+      </div>
+      <div style="display:flex;gap:8pt;flex-shrink:0">
+        <div style="flex:0 0 0.6in;font-size:5.5pt;color:#aaa;padding-top:2px">Reflection</div>
+        <div class="wline" style="flex:1"></div>
+      </div>
+    </div>`).join('');
+  return `<div class="planner-page"><div class="page-inner">
+    <div class="pg-title">FOCUS BLOCK PLANNER${pgDate(fmtLong(d))}</div>
+    <div style="flex:1;display:flex;flex-direction:column;min-height:0">${blocks}</div>
+  </div></div>`;
+}
+
+function pgWeeklyMetrics() {
+  const mon = parseWeek(document.getElementById('inp-week').value);
+  const sun = addDays(mon, 6);
+  const dayHdrs = ['Mon','Tue','Wed','Thu','Fri'].map(d=>`<th style="width:0.55in;text-align:center">${d}</th>`).join('');
+  let rows = '';
+  for (let i = 0; i < 12; i++) {
+    rows += `<tr><td style="width:1.5in"></td><td style="text-align:center"></td><td style="text-align:center"></td><td style="text-align:center"></td><td style="text-align:center"></td><td style="text-align:center"></td><td style="width:0.55in;text-align:center"></td><td style="width:1.2in"></td></tr>`;
+  }
+  return `<div class="planner-page"><div class="page-inner">
+    <div class="pg-title">WEEKLY METRICS${pgDate(`Week of ${fmtShort(mon)} – ${fmtShort(sun)}`)}</div>
+    <table class="pt" style="flex:1">
+      <thead><tr><th style="width:1.5in">Metric</th>${dayHdrs}<th style="width:0.55in;text-align:center">Total</th><th style="width:1.2in">Notes</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div style="margin-top:6pt;flex-shrink:0">
+      <div class="sec-label">Commentary / Notes</div>
+      ${wlines(6)}
+    </div>
+  </div></div>`;
+}
+
+function pgDecisionLog() {
+  return `<div class="planner-page"><div class="page-inner">
+    <div class="pg-title">DECISION LOG</div>
+    <table class="pt" style="flex:1">
+      <thead><tr>
+        <th style="width:0.65in">Date</th>
+        <th style="width:1.4in">Decision</th>
+        <th style="width:1.4in">Alternatives Considered</th>
+        <th style="width:1.5in">Reasoning</th>
+        <th>Outcome</th>
+      </tr></thead>
+      <tbody>${trows(18,['0.65in','1.4in','1.4in','1.5in',''])}</tbody>
+    </table>
+  </div></div>`;
+}
+
+function pgRiskRegister() {
+  const proj = document.getElementById('inp-project').value.trim();
+  let rows = '';
+  for (let i = 1; i <= 14; i++) {
+    rows += `<tr>
+      <td style="width:18px;text-align:center;color:#ccc;font-size:7pt">${i}</td>
+      <td></td>
+      <td style="width:0.42in;text-align:center"></td>
+      <td style="width:0.5in;text-align:center"></td>
+      <td style="width:0.45in;text-align:center"></td>
+      <td style="width:1.4in"></td>
+      <td style="width:0.75in"></td>
+      <td style="width:0.65in"></td>
+    </tr>`;
+  }
+  return `<div class="planner-page"><div class="page-inner">
+    <div class="pg-title">RISK REGISTER<span class="pg-date">${proj ? proj.toUpperCase() : '&nbsp;'}</span></div>
+    <table class="pt" style="flex:1">
+      <thead><tr>
+        <th style="width:18px">#</th><th>Risk</th>
+        <th style="width:0.42in;text-align:center">Prob</th>
+        <th style="width:0.5in;text-align:center">Impact</th>
+        <th style="width:0.45in;text-align:center">Score</th>
+        <th style="width:1.4in">Mitigation</th>
+        <th style="width:0.75in">Owner</th>
+        <th style="width:0.65in">Status</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div style="font-size:5.5pt;color:#bbb;margin-top:4pt;flex-shrink:0">P/I: 1=Low &nbsp; 2=Med &nbsp; 3=High. &nbsp; Score = P×I</div>
+  </div></div>`;
+}
+
+function pgAfterAction() {
+  const topic = document.getElementById('inp-topic').value.trim();
+  const d = parseDate(document.getElementById('inp-date').value);
+  const dateLine = isUndated() ? 'Date: _______________' : fmtLong(d);
+  return `<div class="planner-page"><div class="page-inner">
+    <div class="pg-title">AFTER-ACTION REPORT<span class="pg-date">${topic || '&nbsp;'}</span></div>
+    <div style="font-size:6.5pt;color:#aaa;margin-bottom:6pt;flex-shrink:0">${dateLine}</div>
+    <div style="display:flex;flex-direction:column;gap:6pt">
+      <div><div class="sec-label">What Happened</div>${wlines(3)}</div>
+      <div><div class="sec-label">What Went Well</div>${wlines(4)}</div>
+      <div><div class="sec-label">What Didn't Work</div>${wlines(4)}</div>
+      <div><div class="sec-label">Root Causes</div>${wlines(3)}</div>
+      <div><div class="sec-label">Changes for Next Time</div>${wlines(4)}</div>
+      <div><div class="sec-label">Follow-up Actions</div>${cbrows(4)}</div>
+    </div>
+  </div></div>`;
+}
+
+function pgDelegationTracker() {
+  return `<div class="planner-page"><div class="page-inner">
+    <div class="pg-title">DELEGATION TRACKER</div>
+    <table class="pt" style="flex:1">
+      <thead><tr>
+        <th style="width:1.5in">Task</th>
+        <th style="width:0.9in">To</th>
+        <th style="width:0.65in">Given</th>
+        <th style="width:0.65in">Due</th>
+        <th>Success Criteria</th>
+        <th style="width:0.75in">Status</th>
+      </tr></thead>
+      <tbody>${trows(18,['1.5in','0.9in','0.65in','0.65in','','0.75in'])}</tbody>
+    </table>
+  </div></div>`;
+}
+
+function pgAgendaTemplate() {
+  const topic = document.getElementById('inp-topic').value.trim();
+  const d = parseDate(document.getElementById('inp-date').value);
+  const dateLine = isUndated() ? 'Date: _______________' : fmtShort(d);
+  let agendaRows = '';
+  for (let i = 1; i <= 8; i++) {
+    agendaRows += `<tr><td style="width:18px;text-align:center;color:#ccc;font-size:7pt">${i}</td><td></td><td style="width:0.85in"></td><td style="width:0.5in"></td></tr>`;
+  }
+  return `<div class="planner-page"><div class="page-inner">
+    <div class="pg-title">MEETING AGENDA<span class="pg-date">${topic || '&nbsp;'}</span></div>
+    <div style="font-size:6.5pt;color:#aaa;margin-bottom:5pt;flex-shrink:0">${dateLine} &nbsp;&nbsp;&nbsp; Time: _______________ &nbsp;&nbsp;&nbsp; Location: _______________</div>
+    <div style="flex-shrink:0;margin-bottom:4pt">
+      <div class="sec-label">Desired Outcome</div>${wlines(2)}
+    </div>
+    <div style="display:flex;gap:10pt;flex-shrink:0;margin-bottom:4pt">
+      <div style="flex:1"><div class="sec-label">Attendees Needed</div>${wlines(1)}</div>
+      <div style="flex:1"><div class="sec-label">Pre-read / Prep</div>${wlines(1)}</div>
+    </div>
+    <div style="flex-shrink:0;margin-bottom:4pt">
+      <div class="sec-label">Agenda</div>
+      <table class="pt">
+        <thead><tr><th style="width:18px">#</th><th>Topic</th><th style="width:0.85in">Owner</th><th style="width:0.5in">Time</th></tr></thead>
+        <tbody>${agendaRows}</tbody>
+      </table>
+    </div>
+    <div style="flex-shrink:0;margin-bottom:4pt">
+      <div class="sec-label">Expected Decisions</div>${numrows(4)}
+    </div>
+    <div style="flex:1;min-height:0;overflow:hidden">
+      <div class="sec-label">Notes / Questions</div>${wlines(40)}
+    </div>
+  </div></div>`;
+}
+
+function pgInterviewNotes() {
+  const person = document.getElementById('inp-person').value.trim();
+  const d = parseDate(document.getElementById('inp-date').value);
+  const dateLine = isUndated() ? 'Date: _______________' : fmtShort(d);
+  const circle5 = Array(5).fill('<div style="width:9pt;height:9pt;border-radius:50%;border:0.75px solid #bbb;flex-shrink:0"></div>').join('');
+  const competencies = Array(4).fill(null).map((_, i) => `
+    <div style="flex-shrink:0;margin-bottom:5pt">
+      <div style="display:flex;align-items:center;gap:6pt;margin-bottom:2pt">
+        <div style="font-size:5.5pt;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#aaa;white-space:nowrap">Competency ${i+1}</div>
+        <div class="wline" style="flex:1"></div>
+        <div style="display:flex;gap:4pt">${circle5}</div>
+      </div>
+      ${wlines(2)}
+    </div>`).join('');
+  const decisionBoxes = ['HIRE','PASS','MAYBE'].map(lbl =>
+    `<div style="border:1.5px solid #bbb;padding:4pt 10pt;text-align:center;font-size:7pt;font-weight:700;letter-spacing:0.1em;color:#999;flex:1">${lbl}</div>`
+  ).join('');
+  return `<div class="planner-page"><div class="page-inner">
+    <div class="pg-title">INTERVIEW NOTES<span class="pg-date">${person || '&nbsp;'}</span></div>
+    <div style="font-size:6.5pt;color:#aaa;margin-bottom:5pt;flex-shrink:0">${dateLine} &nbsp;&nbsp;&nbsp; Role: _______________</div>
+    ${competencies}
+    <div style="flex-shrink:0;margin-bottom:5pt">
+      <div class="sec-label">Overall Impression</div>${wlines(3)}
+    </div>
+    <div style="flex-shrink:0">
+      <div class="sec-label">Decision (circle one)</div>
+      <div style="display:flex;gap:10pt;margin-top:4pt">${decisionBoxes}</div>
+    </div>
+  </div></div>`;
+}
+
+function pgPerfReviewPrep() {
+  const circle5 = Array(5).fill(null).map((_,i) =>
+    `<th style="width:0.35in;text-align:center">${i+1}</th>`).join('');
+  const scoreRows = Array(5).fill(null).map(() =>
+    `<tr><td></td>${Array(5).fill('<td style="text-align:center"></td>').join('')}</tr>`).join('');
+  return `<div class="planner-page"><div class="page-inner">
+    <div class="pg-title">PERFORMANCE REVIEW PREP</div>
+    <div style="font-size:6.5pt;color:#aaa;margin-bottom:5pt;flex-shrink:0">Period: _______________ &nbsp;&nbsp;&nbsp; Role: _______________</div>
+    <div style="flex:1;display:flex;flex-direction:column;gap:6pt;min-height:0">
+      <div><div class="sec-label">Accomplishments</div>${cbrows(5)}</div>
+      <div><div class="sec-label">Challenges &amp; How Addressed</div>${wlines(4)}</div>
+      <div><div class="sec-label">Feedback Received</div>${wlines(3)}</div>
+      <div><div class="sec-label">Goals Next Period</div>${cbrows(4)}</div>
+      <div><div class="sec-label">Career Development</div>${wlines(3)}</div>
+      <div style="flex-shrink:0">
+        <div class="sec-label">Self-Rating</div>
+        <table class="pt">
+          <thead><tr><th>Competency</th>${circle5}</tr></thead>
+          <tbody>${scoreRows}</tbody>
+        </table>
+      </div>
+    </div>
+  </div></div>`;
+}
+
+function pgBudgetTracker() {
+  const {y, m} = parseMonth(document.getElementById('inp-month').value);
+  let rows = '';
+  for (let i = 0; i < 18; i++) {
+    rows += `<tr><td style="width:1.6in"></td><td style="width:0.85in;text-align:right"></td><td style="width:0.85in;text-align:right"></td><td style="width:0.85in;text-align:right"></td></tr>`;
+  }
+  const totalsRow = `<tr style="border-top:1.5px solid #999;font-weight:700">
+    <td style="width:1.6in;font-size:6pt;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#777">Totals</td>
+    <td style="width:0.85in;text-align:right"></td><td style="width:0.85in;text-align:right"></td><td style="width:0.85in;text-align:right"></td>
+  </tr>`;
+  return `<div class="planner-page"><div class="page-inner">
+    <div class="pg-title">BUDGET / EXPENSE TRACKER${pgDate(`${MONTHS[m].toUpperCase()} ${y}`)}</div>
+    <table class="pt" style="flex:1">
+      <thead><tr>
+        <th style="width:1.6in">Category</th>
+        <th style="width:0.85in;text-align:right">Budget</th>
+        <th style="width:0.85in;text-align:right">Actual</th>
+        <th style="width:0.85in;text-align:right">Variance</th>
+      </tr></thead>
+      <tbody>${rows}${totalsRow}</tbody>
+    </table>
+    <div style="margin-top:5pt;flex-shrink:0">
+      <div class="sec-label">Notes</div>${wlines(4)}
+    </div>
+  </div></div>`;
+}
+
+function pgReadingList() {
+  let rows = '';
+  for (let i = 1; i <= 22; i++) {
+    rows += `<tr>
+      <td style="width:18px;text-align:center;color:#ccc;font-size:7pt">${i}</td>
+      <td></td>
+      <td style="width:0.65in;font-size:6.5pt"></td>
+      <td style="width:0.55in;text-align:center"></td>
+      <td style="width:0.65in;text-align:center"></td>
+      <td style="width:1.5in"></td>
+    </tr>`;
+  }
+  return `<div class="planner-page"><div class="page-inner">
+    <div class="pg-title">READING / LEARNING LIST</div>
+    <table class="pt" style="flex:1">
+      <thead><tr>
+        <th style="width:18px">#</th>
+        <th>Title / Resource</th>
+        <th style="width:0.65in">Type</th>
+        <th style="width:0.55in;text-align:center">Priority</th>
+        <th style="width:0.65in;text-align:center">Status</th>
+        <th style="width:1.5in">Key Takeaway</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div></div>`;
+}
+
+function pgContactSheet() {
+  return `<div class="planner-page"><div class="page-inner">
+    <div class="pg-title">CONTACT REFERENCE SHEET</div>
+    <table class="pt" style="flex:1">
+      <thead><tr>
+        <th style="width:1.5in">Name</th>
+        <th style="width:2in">Phone / Email</th>
+        <th>Role / Notes</th>
+      </tr></thead>
+      <tbody>${trows(28,['1.5in','2in',''])}</tbody>
+    </table>
+  </div></div>`;
+}
+
+function pgTravelPlanner() {
+  const topic = document.getElementById('inp-topic').value.trim();
+  const d = parseDate(document.getElementById('inp-date').value);
+  const dateLine = isUndated() ? '_______________' : fmtShort(d);
+  const itRows = Array(10).fill(null).map((_, i) =>
+    `<tr><td style="width:0.4in;text-align:center;font-size:6.5pt;color:#aaa">${i+1}</td><td style="width:0.75in"></td><td></td><td style="width:1.2in"></td></tr>`
+  ).join('');
+  const contactRows = Array(4).fill('<tr><td style="width:1.5in"></td><td></td></tr>').join('');
+  const packCol = cbrows(6);
+  return `<div class="planner-page"><div class="page-inner">
+    <div class="pg-title">TRAVEL / EVENT PLANNER<span class="pg-date">${topic || '&nbsp;'}</span></div>
+    <div style="display:flex;gap:10pt;flex-shrink:0;margin-bottom:5pt">
+      <div style="flex:1"><div class="sec-label">Destination</div>${wlines(1)}</div>
+      <div style="flex:1"><div class="sec-label">Dates</div>${wlines(1)}</div>
+      <div style="flex:1"><div class="sec-label">Purpose</div>${wlines(1)}</div>
+    </div>
+    <div style="flex-shrink:0;margin-bottom:5pt">
+      <div class="sec-label">Itinerary</div>
+      <table class="pt">
+        <thead><tr><th style="width:0.4in">Day</th><th style="width:0.75in">Date</th><th>Activity / Item</th><th style="width:1.2in">Notes</th></tr></thead>
+        <tbody>${itRows}</tbody>
+      </table>
+    </div>
+    <div style="flex-shrink:0;margin-bottom:5pt">
+      <div class="sec-label">Logistics</div>${wlines(3)}
+    </div>
+    <div style="display:flex;gap:10pt;flex-shrink:0;margin-bottom:5pt">
+      <div style="flex:1">
+        <div class="sec-label">Contacts for This Trip</div>
+        <table class="pt">
+          <thead><tr><th style="width:1.5in">Name</th><th>Phone</th></tr></thead>
+          <tbody>${contactRows}</tbody>
+        </table>
+      </div>
+      <div style="flex:1">
+        <div class="sec-label">Packing / Prep</div>
+        <div style="display:flex;gap:6pt">${packCol}${packCol}</div>
+      </div>
+    </div>
+    <div style="flex:1;min-height:0;overflow:hidden">
+      <div class="sec-label">Notes</div>${wlines(40)}
+    </div>
+  </div></div>`;
+}
+
+function pgHealthLog() {
+  const mon = parseWeek(document.getElementById('inp-week').value);
+  const sun = addDays(mon, 6);
+  const days = Array.from({length:7}, (_,i) => addDays(mon, i));
+  const dayHdrs = days.map(d => `<th style="text-align:center">${DAYS_S[(d.getDay())]}<br><span style="font-weight:400;color:#bbb">${isUndated() ? '' : fmtShort(d)}</span></th>`).join('');
+  const circle5 = `<div style="display:flex;gap:2pt;justify-content:center">${Array(5).fill('<div style="width:7pt;height:7pt;border-radius:50%;border:0.75px solid #bbb"></div>').join('')}</div>`;
+  const rowDefs = [
+    {label:'Sleep (hrs)', content: ''},
+    {label:'Exercise', content: ''},
+    {label:'Energy', content: circle5},
+    {label:'Nutrition', content: ''},
+    {label:'Notes', content: ''},
+  ];
+  const bodyRows = rowDefs.map(r => `<tr>
+    <th style="text-align:left;font-size:5.5pt;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#777;white-space:nowrap;padding-right:6pt">${r.label}</th>
+    ${days.map(() => `<td style="text-align:center;vertical-align:middle;padding:3pt 2pt">${r.content}</td>`).join('')}
+  </tr>`).join('');
+  return `<div class="planner-page"><div class="page-inner">
+    <div class="pg-title">HEALTH / ENERGY LOG${pgDate(`Week of ${fmtShort(mon)} – ${fmtShort(sun)}`)}</div>
+    <table class="pt" style="margin-bottom:8pt;flex-shrink:0">
+      <thead><tr><th style="width:1in"></th>${dayHdrs}</tr></thead>
+      <tbody>${bodyRows}</tbody>
+    </table>
+    <div style="flex:1;min-height:0;overflow:hidden">
+      <div class="sec-label">Intentions / Reflections</div>${wlines(40)}
+    </div>
+  </div></div>`;
+}
+
+const BIBLE_BOOKS = [
+  {name:'Genesis',         chs:50,  t:'OT'}, {name:'Exodus',           chs:40,  t:'OT'},
+  {name:'Leviticus',       chs:27,  t:'OT'}, {name:'Numbers',           chs:36,  t:'OT'},
+  {name:'Deuteronomy',     chs:34,  t:'OT'}, {name:'Joshua',            chs:24,  t:'OT'},
+  {name:'Judges',          chs:21,  t:'OT'}, {name:'Ruth',              chs:4,   t:'OT'},
+  {name:'1 Samuel',        chs:31,  t:'OT'}, {name:'2 Samuel',          chs:24,  t:'OT'},
+  {name:'1 Kings',         chs:22,  t:'OT'}, {name:'2 Kings',           chs:25,  t:'OT'},
+  {name:'1 Chronicles',    chs:29,  t:'OT'}, {name:'2 Chronicles',      chs:36,  t:'OT'},
+  {name:'Ezra',            chs:10,  t:'OT'}, {name:'Nehemiah',          chs:13,  t:'OT'},
+  {name:'Esther',          chs:10,  t:'OT'}, {name:'Job',               chs:42,  t:'OT'},
+  {name:'Psalms',          chs:150, t:'OT'}, {name:'Proverbs',          chs:31,  t:'OT'},
+  {name:'Ecclesiastes',    chs:12,  t:'OT'}, {name:'Song of Solomon',   chs:8,   t:'OT'},
+  {name:'Isaiah',          chs:66,  t:'OT'}, {name:'Jeremiah',          chs:52,  t:'OT'},
+  {name:'Lamentations',    chs:5,   t:'OT'}, {name:'Ezekiel',           chs:48,  t:'OT'},
+  {name:'Daniel',          chs:12,  t:'OT'}, {name:'Hosea',             chs:14,  t:'OT'},
+  {name:'Joel',            chs:3,   t:'OT'}, {name:'Amos',              chs:9,   t:'OT'},
+  {name:'Obadiah',         chs:1,   t:'OT'}, {name:'Jonah',             chs:4,   t:'OT'},
+  {name:'Micah',           chs:7,   t:'OT'}, {name:'Nahum',             chs:3,   t:'OT'},
+  {name:'Habakkuk',        chs:3,   t:'OT'}, {name:'Zephaniah',         chs:3,   t:'OT'},
+  {name:'Haggai',          chs:2,   t:'OT'}, {name:'Zechariah',         chs:14,  t:'OT'},
+  {name:'Malachi',         chs:4,   t:'OT'},
+  {name:'Matthew',         chs:28,  t:'NT'}, {name:'Mark',              chs:16,  t:'NT'},
+  {name:'Luke',            chs:24,  t:'NT'}, {name:'John',              chs:21,  t:'NT'},
+  {name:'Acts',            chs:28,  t:'NT'}, {name:'Romans',            chs:16,  t:'NT'},
+  {name:'1 Corinthians',   chs:16,  t:'NT'}, {name:'2 Corinthians',     chs:13,  t:'NT'},
+  {name:'Galatians',       chs:6,   t:'NT'}, {name:'Ephesians',         chs:6,   t:'NT'},
+  {name:'Philippians',     chs:4,   t:'NT'}, {name:'Colossians',        chs:4,   t:'NT'},
+  {name:'1 Thessalonians', chs:5,   t:'NT'}, {name:'2 Thessalonians',   chs:3,   t:'NT'},
+  {name:'1 Timothy',       chs:6,   t:'NT'}, {name:'2 Timothy',         chs:4,   t:'NT'},
+  {name:'Titus',           chs:3,   t:'NT'}, {name:'Philemon',          chs:1,   t:'NT'},
+  {name:'Hebrews',         chs:13,  t:'NT'}, {name:'James',             chs:5,   t:'NT'},
+  {name:'1 Peter',         chs:5,   t:'NT'}, {name:'2 Peter',           chs:3,   t:'NT'},
+  {name:'1 John',          chs:5,   t:'NT'}, {name:'2 John',            chs:1,   t:'NT'},
+  {name:'3 John',          chs:1,   t:'NT'}, {name:'Jude',              chs:1,   t:'NT'},
+  {name:'Revelation',      chs:22,  t:'NT'},
+];
+
+const BIBLE_PRESETS = {
+  full:    [0, 65],
+  ot:      [0, 38],
+  nt:      [39, 65],
+  pent:    [0, 4],
+  hist:    [5, 16],
+  poet:    [17, 21],
+  maj:     [22, 26],
+  min:     [27, 38],
+  gospels: [39, 42],
+  epist:   [43, 64],
+  rev:     [65, 65],
+};
+
+function onBibleRangeChange() {
+  const isCustom = document.getElementById('inp-bible-range').value === 'custom';
+  document.getElementById('ctrl-bible-custom').style.display = isCustom ? 'contents' : 'none';
+  renderCurrent();
+}
+
+function pgBibleReadingPlan() {
+  const rangeVal = document.getElementById('inp-bible-range')?.value || 'full';
+  let fromIdx, toIdx;
+  if (rangeVal === 'custom') {
+    fromIdx = parseInt(document.getElementById('inp-bible-from')?.value ?? '0');
+    toIdx   = parseInt(document.getElementById('inp-bible-to')?.value ?? '65');
+  } else {
+    [fromIdx, toIdx] = BIBLE_PRESETS[rangeVal] || [0, 65];
+  }
+  if (toIdx < fromIdx) toIdx = fromIdx;
+  const books = BIBLE_BOOKS.slice(fromIdx, toIdx + 1);
+
+  // Layout constants (pt)
+  const BW = 10, BH = 9, BGAP = 1;   // box width, height, gap
+  const BSTEP = BW + BGAP;             // 11pt per box cell
+  const LW = 76;                        // label column width
+  const BOX_AREA = 414;                 // available pt for boxes (≈5.75in)
+  const BPR = Math.floor(BOX_AREA / BSTEP); // boxes per row = 37
+  const RH = 12;                        // row height (box + gap below)
+  const BGAP_BOOK = 3;                  // gap between books
+  const SH = 15;                        // section header height
+  const PH = 648;                       // usable page height
+  const TITLE_H = 28;                   // first-page title
+
+  // Paginate
+  const pages = [];
+  let items = [], usedH = TITLE_H, prevT = null;
+  const flush = () => { if (items.length) { pages.push(items); items = []; usedH = 0; } };
+
+  for (const book of books) {
+    const nRows = Math.ceil(book.chs / BPR);
+    const needSec = book.t !== prevT;
+    const bh = nRows * RH + BGAP_BOOK + (needSec ? SH : 0);
+    if (usedH + bh > PH && items.length) flush();
+    if (book.t !== prevT) {
+      items.push({type:'sec', label: book.t === 'OT' ? 'Old Testament' : 'New Testament'});
+      usedH += SH;
+      prevT = book.t;
+    }
+    items.push({type:'book', book, nRows});
+    usedH += nRows * RH + BGAP_BOOK;
+  }
+  flush();
+
+  const chBox = n => {
+    const fs = n > 99 ? '3.8pt' : '5pt';
+    return `<div style="width:${BW}pt;height:${BH}pt;border:0.6px solid #bbb;display:inline-flex;align-items:center;justify-content:center;font-size:${fs};color:#bbb;flex-shrink:0;margin-right:${BGAP}pt">${n}</div>`;
+  };
+
+  const bookBlock = ({book, nRows}) => {
+    let html = '';
+    for (let r = 0; r < nRows; r++) {
+      const s = r * BPR + 1, e = Math.min((r + 1) * BPR, book.chs);
+      const label = r === 0
+        ? `<div style="width:${LW}pt;flex-shrink:0;font-size:5.5pt;font-weight:700;letter-spacing:0.06em;color:#444;text-transform:uppercase;white-space:nowrap;overflow:hidden;line-height:${RH}pt">${book.name}</div>`
+        : `<div style="width:${LW}pt;flex-shrink:0"></div>`;
+      const boxes = Array.from({length: e - s + 1}, (_, i) => chBox(s + i)).join('');
+      html += `<div style="display:flex;align-items:center;height:${RH}pt;flex-shrink:0">${label}${boxes}</div>`;
+    }
+    return html + `<div style="height:${BGAP_BOOK}pt;flex-shrink:0"></div>`;
+  };
+
+  const renderPage = (pageItems, pgNum, total) => {
+    const isFirst = pgNum === 1;
+    const titleHtml = isFirst
+      ? `<div class="pg-title">BIBLE READING PLAN</div>`
+      : `<div style="font-size:6pt;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#bbb;margin-bottom:8pt;flex-shrink:0">Bible Reading Plan — continued (${pgNum}/${total})</div>`;
+    const content = pageItems.map(item =>
+      item.type === 'sec'
+        ? `<div class="sec-label" style="margin-bottom:4pt;margin-top:2pt;flex-shrink:0">${item.label}</div>`
+        : bookBlock(item)
+    ).join('');
+    return `<div class="planner-page"><div class="page-inner">${titleHtml}${content}</div></div>`;
+  };
+
+  return pages.map((pg, i) => renderPage(pg, i + 1, pages.length)).join('\n');
+}
+
+// ── ROUTING ────────────────────────────────────────────────────────────────
+
+const PAGE_MAP = {
+  'monthly-calendar':  pgMonthlyCalendar,
+  'annual-deadlines':  pgAnnualDeadlines,
+  'brain-dump':        pgBrainDump,
+  'weekly-cc':         pgWeeklyCC,
+  'weekly-plan':       pgWeeklyPlan,
+  'daily-slip':        () => pgDailySlip(null),
+  'weekly-review':     pgWeeklyReview,
+  'focus-block':       pgFocusBlock,
+  'weekly-metrics':    pgWeeklyMetrics,
+  'project-dashboard': pgProjectDashboard,
+  'project-log':       pgProjectLog,
+  'milestone-tracker': pgMilestoneTracker,
+  'next-actions':      pgNextActions,
+  'project-list':      pgProjectList,
+  'decision-log':      pgDecisionLog,
+  'risk-register':     pgRiskRegister,
+  'after-action':      pgAfterAction,
+  'delegation':        pgDelegationTracker,
+  'waiting-on':        pgWaitingOn,
+  'agenda':            pgAgendaTemplate,
+  'interview':         pgInterviewNotes,
+  'perf-review':       pgPerfReviewPrep,
+  'one-on-one':        pgOneOnOne,
+  'meeting-log':       pgMeetingLog,
+  'meeting-notes':     pgMeetingNotes,
+  'budget-tracker':    pgBudgetTracker,
+  'reading-list':      pgReadingList,
+  'contact-sheet':     pgContactSheet,
+  'sop-ref':           pgSOPRef,
+  'wins-tracker':      pgWinsTracker,
+  'habit-tracker':     pgHabitTracker,
+  'notes-page':        pgNotesPage,
+  'life-compass':      pgLifeCompass,
+  'annual-goals':      pgAnnualGoals,
+  'goal-detail':       pgGoalDetail,
+  'quarterly-plan':    pgQuarterlyPlan,
+  'quarterly-review':  pgQuarterlyReview,
+  'ideal-week':        pgIdealWeek,
+  'someday-maybe':     pgSomedayMaybe,
+  'rel-roster':        pgRelRoster,
+  'rel-profile':       pgRelProfile,
+  'rel-log':           pgRelLog,
+  'rel-planner':       pgRelPlanner,
+  'travel-planner':    pgTravelPlanner,
+  'health-log':        pgHealthLog,
+  'divider-page':      pgDividerPage,
+  'bible-plan':        pgBibleReadingPlan,
+};
+
+let currentPageId = null;
+
+function pick(btn) {
+  document.querySelectorAll('.sb-item').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentPageId = btn.dataset.page;
+
+  const active = (btn.dataset.ctrl || '').split(',').filter(Boolean);
+  ['week','date','month','year','quarter','project','person','topic'].forEach(c => {
+    document.getElementById('ctrl-' + c).style.display = active.includes(c) ? 'flex' : 'none';
+  });
+  const showWeekBtns = active.includes('week-print') ? '' : 'none';
+  document.getElementById('btn-week5').style.display = showWeekBtns;
+  document.getElementById('btn-week7').style.display = showWeekBtns;
+  document.getElementById('btn-qday5').style.display = showWeekBtns;
+  document.getElementById('btn-qday7').style.display = showWeekBtns;
+  document.getElementById('ctrl-notes-back').style.display = 'flex';
+  document.getElementById('ctrl-daily-opts').style.display = currentPageId === 'daily-slip' ? 'flex' : 'none';
+  document.getElementById('btn-proj-pack').style.display = active.includes('pp') ? '' : 'none';
+  document.getElementById('btn-queue-months').style.display = currentPageId === 'monthly-calendar' ? '' : 'none';
+  document.getElementById('ctrl-compass').style.display = currentPageId === 'life-compass' ? 'flex' : 'none';
+  document.getElementById('ctrl-bible').style.display = currentPageId === 'bible-plan' ? 'flex' : 'none';
+
+  renderCurrent();
+}
+
+function getMarginMode() {
+  return document.querySelector('input[name="margin"]:checked').value; // 'right' | 'left' | 'center'
+}
+
+function getBackMode(mode) {
+  return mode === 'right' ? 'left' : mode === 'left' ? 'right' : 'center';
+}
+
+function applyMarginToEl(el, mode) {
+  el.classList.remove('lp', 'cp');
+  if (mode === 'left')   el.classList.add('lp');
+  if (mode === 'center') el.classList.add('cp');
+}
+
+function applyMargin() {
+  const mode = getMarginMode();
+  document.querySelectorAll('#preview-wrapper .page-inner').forEach(el => applyMarginToEl(el, mode));
+}
+
+function injectPrintExtras(wrapper) {
+  const name = document.getElementById('inp-username').value.trim();
+  if (name) {
+    wrapper.querySelectorAll('.planner-page').forEach(pg => {
+      const d = document.createElement('div');
+      d.className = 'print-name';
+      d.textContent = name;
+      pg.appendChild(d);
+    });
+  }
+}
+
+function doPrint() {
+  const backVal = document.getElementById('inp-back-mode').value || 'blank';
+  const wrapper = document.getElementById('preview-wrapper');
+  if (backVal === 'blank') { injectPrintExtras(wrapper); window.print(); return; }
+
+  const front    = wrapper.innerHTML;
+  const backMode = getBackMode(getMarginMode());
+  const tmp      = document.createElement('div');
+  if (backVal === 'notes') {
+    tmp.innerHTML = pgNotesPage();
+  } else {
+    tmp.innerHTML = (PAGE_MAP[currentPageId] || (() => ''))();
+  }
+  applyMarginToEl(tmp.querySelector('.page-inner'), backMode);
+  wrapper.innerHTML = front + tmp.innerHTML;
+  injectPrintExtras(wrapper);
+  window.print();
+  wrapper.innerHTML = front;
+}
+
+function renderCurrent() {
+  if (!currentPageId) return;
+  const fn = PAGE_MAP[currentPageId];
+  if (!fn) return;
+  document.getElementById('preview-wrapper').innerHTML = fn();
+  applyMargin();
+  rescale();
+}
+
+function printWeekDays(n = 5) {
+  const mon     = weekMonday(parseDate(document.getElementById('inp-date').value));
+  const mode    = getMarginMode();
+  const backVal = document.getElementById('inp-back-mode').value || 'blank';
+  const backMode = getBackMode(mode);
+  const wrapper = document.getElementById('preview-wrapper');
+
+  let html = '';
+  for (let i = 0; i < n; i++) {
+    html += pgDailySlip(addDays(mon, i));
+    if (backVal === 'notes') html += pgNotesPage();
+    else if (backVal === 'duplicate') html += pgDailySlip(addDays(mon, i));
+  }
+  wrapper.innerHTML = html;
+
+  const innerEls = wrapper.querySelectorAll('.page-inner');
+  if (backVal !== 'blank') {
+    innerEls.forEach((el, i) => applyMarginToEl(el, i % 2 === 0 ? mode : backMode));
+  } else {
+    innerEls.forEach(el => applyMarginToEl(el, mode));
+  }
+
+  window.print();
+  renderCurrent();
+}
+
+// ── PRINT QUEUE ───────────────────────────────────────────────────────────
+
+let printQueue = [];
+
+function captureParams() {
+  return {
+    date:        document.getElementById('inp-date').value,
+    week:        document.getElementById('inp-week').value,
+    month:       document.getElementById('inp-month').value,
+    year:        document.getElementById('inp-year').value,
+    project:     document.getElementById('inp-project').value,
+    person:      document.getElementById('inp-person').value,
+    topic:       document.getElementById('inp-topic').value,
+    quarter:     document.getElementById('inp-quarter').value,
+    startTime:   document.getElementById('inp-start-time').value,
+    endTime:     document.getElementById('inp-end-time').value,
+    slotSize:    document.getElementById('inp-slot-size').value,
+    showInt:     document.getElementById('inp-show-interrupt').checked,
+    dailyRight:  document.querySelector('input[name="daily-right"]:checked')?.value || 'tasks-notes',
+    tasksN:      document.getElementById('inp-tasks').value,
+    showMorn:    document.getElementById('inp-rtn-morning').checked,
+    showStart:   document.getElementById('inp-rtn-startup').checked,
+    showStop:    document.getElementById('inp-rtn-shutdown').checked,
+    showEven:    document.getElementById('inp-rtn-evening').checked,
+    undated:     document.getElementById('inp-undated').checked,
+  };
+}
+
+function restoreParams(p) {
+  document.getElementById('inp-date').value    = p.date;
+  document.getElementById('inp-week').value    = p.week;
+  document.getElementById('inp-month').value   = p.month;
+  document.getElementById('inp-year').value    = p.year;
+  document.getElementById('inp-project').value = p.project;
+  document.getElementById('inp-person').value  = p.person;
+  document.getElementById('inp-topic').value   = p.topic;
+  document.getElementById('inp-quarter').value = p.quarter;
+  document.getElementById('inp-start-time').value = p.startTime;
+  document.getElementById('inp-end-time').value   = p.endTime;
+  document.getElementById('inp-slot-size').value  = p.slotSize;
+  document.getElementById('inp-show-interrupt').checked = p.showInt;
+  const r = document.querySelector(`input[name="daily-right"][value="${p.dailyRight}"]`);
+  if (r) r.checked = true;
+  if (p.tasksN  !== undefined) document.getElementById('inp-tasks').value       = p.tasksN;
+  if (p.showMorn  !== undefined) document.getElementById('inp-rtn-morning').checked  = p.showMorn;
+  if (p.showStart !== undefined) document.getElementById('inp-rtn-startup').checked  = p.showStart;
+  if (p.showStop  !== undefined) document.getElementById('inp-rtn-shutdown').checked = p.showStop;
+  if (p.showEven  !== undefined) document.getElementById('inp-rtn-evening').checked  = p.showEven;
+  if (p.undated   !== undefined) document.getElementById('inp-undated').checked      = p.undated;
+}
+
+function renderWithParams(pageId, params) {
+  const saved = captureParams();
+  restoreParams(params);
+  const html = (PAGE_MAP[pageId] || (() => ''))();
+  restoreParams(saved);
+  return html;
+}
+
+function queueLabel(pageId, params) {
+  const p = params;
+  const wl = w => { if (!w) return ''; const d = parseWeek(w); return `${MONTHS[d.getMonth()].slice(0,3)} ${d.getDate()}`; };
+  const ml = m => { if (!m) return ''; const r = parseMonth(m); return `${MONTHS[r.m].slice(0,3)} ${r.y}`; };
+  const dl = d => { if (!d) return ''; const dt = parseDate(d); return `${DAYS_S[dt.getDay()]} ${dt.getMonth()+1}/${dt.getDate()}`; };
+  const map = {
+    'monthly-calendar':  `Calendar — ${ml(p.month)}`,
+    'annual-deadlines':  `Deadlines ${p.year}`,
+    'brain-dump':        'Brain Dump',
+    'weekly-cc':         `Weekly CC — ${wl(p.week)}`,
+    'weekly-plan':       `Weekly Plan — ${wl(p.week)}`,
+    'daily-slip':        `Daily — ${dl(p.date)}`,
+    'weekly-review':     `Review — ${wl(p.week)}`,
+    'focus-block':       `Focus — ${dl(p.date)}`,
+    'weekly-metrics':    `Metrics — ${wl(p.week)}`,
+    'project-list':      'Project List',
+    'project-dashboard': `Dashboard — ${p.project || '?'}`,
+    'project-log':       `Log — ${p.project || '?'}`,
+    'milestone-tracker': `Milestones — ${p.project || '?'}`,
+    '__blank__':         '— blank —',
+    'next-actions':      `Actions — ${p.project || '?'}`,
+    'decision-log':      'Decision Log',
+    'risk-register':     `Risk — ${p.project || '?'}`,
+    'after-action':      `AAR — ${p.topic || '?'}`,
+    'delegation':        'Delegation Tracker',
+    'waiting-on':        'Waiting On',
+    'agenda':            `Agenda — ${p.topic || dl(p.date) || '?'}`,
+    'interview':         `Interview — ${p.person || '?'}`,
+    'perf-review':       'Perf Review Prep',
+    'one-on-one':        `1:1 — ${p.person || '?'}`,
+    'meeting-log':       `Log — ${p.person || '?'}`,
+    'meeting-notes':     `Meeting — ${p.topic || dl(p.date) || '?'}`,
+    'budget-tracker':    `Budget — ${ml(p.month)}`,
+    'reading-list':      'Reading List',
+    'contact-sheet':     'Contact Sheet',
+    'sop-ref':           `SOP — ${p.topic || '?'}`,
+    'wins-tracker':      'Wins Tracker',
+    'habit-tracker':     `Habits — ${ml(p.month)}`,
+    'notes-page':        'Notes Page',
+    'life-compass':      `Life Compass ${p.year}`,
+    'annual-goals':      `Annual Goals ${p.year}`,
+    'goal-detail':       `Goal — ${p.project || '?'}`,
+    'quarterly-plan':    `Q${p.quarter} Plan ${p.year}`,
+    'quarterly-review':  `Q${p.quarter} Review ${p.year}`,
+    'ideal-week':        'Ideal Week',
+    'someday-maybe':     'Someday / Maybe',
+    'rel-roster':        'Rel. Roster',
+    'rel-profile':       `Profile — ${p.person || '?'}`,
+    'rel-log':           `Rel. Log — ${p.person || '?'}`,
+    'rel-planner':       `Rel. Planner — ${ml(p.month)}`,
+    'travel-planner':    `Travel — ${p.topic || '?'}`,
+    'health-log':        `Health — ${wl(p.week)}`,
+    'divider-page':      `Divider — ${p.topic || '?'}`,
+  };
+  const lbl = map[pageId] || pageId;
+  return p.undated ? lbl.replace(/ — [\w/· ]+$/, '') + ' (blank)' : lbl;
+}
+
+function addToQueue() {
+  if (!currentPageId) return;
+  const params = captureParams();
+  printQueue.push({
+    id: Date.now() + Math.random(),
+    pageId: currentPageId,
+    params,
+    margin: getMarginMode(),
+    back: document.getElementById('inp-back-mode').value || 'blank',
+    label: queueLabel(currentPageId, params),
+  });
+  renderQueue();
+}
+
+function addProjectPack() {
+  const params = captureParams();
+  const margin = getMarginMode();
+  const back = document.getElementById('inp-back-mode').value || 'blank';
+  ['project-dashboard', 'project-log', 'milestone-tracker', 'next-actions', 'risk-register', 'after-action'].forEach(pageId => {
+    printQueue.push({
+      id: Date.now() + Math.random(),
+      pageId,
+      params: { ...params },
+      margin,
+      back,
+      label: queueLabel(pageId, params),
+    });
+  });
+  renderQueue();
+}
+
+function addDaysToQueue(n) {
+  const mon = weekMonday(parseDate(document.getElementById('inp-date').value));
+  const params = captureParams();
+  const margin = getMarginMode();
+  const back = document.getElementById('inp-back-mode').value || 'blank';
+  for (let i = 0; i < n; i++) {
+    const d = addDays(mon, i);
+    const ds = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+    const dayParams = { ...params, date: ds };
+    printQueue.push({
+      id: Date.now() + Math.random(),
+      pageId: 'daily-slip',
+      params: dayParams,
+      margin,
+      back,
+      label: queueLabel('daily-slip', dayParams),
+    });
+  }
+  renderQueue();
+}
+
+function removeFromQueue(id) {
+  printQueue = printQueue.filter(it => it.id !== id);
+  renderQueue();
+}
+
+function clearQueue() {
+  printQueue = [];
+  renderQueue();
+}
+
+function moveQueue(id, dir) {
+  const i = printQueue.findIndex(it => it.id === id);
+  if (i < 0) return;
+  const j = i + dir;
+  if (j < 0 || j >= printQueue.length) return;
+  [printQueue[i], printQueue[j]] = [printQueue[j], printQueue[i]];
+  renderQueue();
+}
+
+function cycleMargin(id) {
+  const item = printQueue.find(it => it.id === id);
+  if (!item) return;
+  item.margin = item.margin === 'right' ? 'left' : item.margin === 'left' ? 'center' : 'right';
+  renderQueue();
+}
+
+function cycleBack(id) {
+  const item = printQueue.find(it => it.id === id);
+  if (!item) return;
+  item.back = item.back === 'blank' ? 'notes' : item.back === 'notes' ? 'duplicate' : 'blank';
+  renderQueue();
+}
+
+function addBlankToQueue() {
+  printQueue.push({
+    id: Date.now() + Math.random(),
+    pageId: '__blank__',
+    params: {},
+    margin: 'center',
+    back: 'blank',
+    label: '— blank —',
+  });
+  renderQueue();
+}
+
+// ── STORAGE ────────────────────────────────────────────────────────────────
+
+const STORAGE = {
+  get: k => { try { return JSON.parse(localStorage.getItem('plnr_'+k)); } catch { return null; } },
+  set: (k,v) => { try { localStorage.setItem('plnr_'+k, JSON.stringify(v)); } catch {} }
+};
+
+// ── FAVORITES ──────────────────────────────────────────────────────────────
+
+let favorites = [];
+
+function toggleFav(pageId, e) {
+  e.stopPropagation();
+  const idx = favorites.indexOf(pageId);
+  if (idx >= 0) favorites.splice(idx, 1);
+  else favorites.push(pageId);
+  STORAGE.set('favorites', favorites);
+  renderFavs();
+}
+
+function renderFavs() {
+  const section = document.getElementById('fav-section');
+  const list = document.getElementById('fav-list');
+  if (favorites.length === 0) {
+    section.style.display = 'none';
+    list.innerHTML = '';
+  } else {
+    section.style.display = '';
+    list.innerHTML = favorites.map(pageId => {
+      const btn = document.querySelector(`.sb-item[data-page="${pageId}"]`);
+      if (!btn) return '';
+      const label = btn.textContent;
+      const ctrl = btn.dataset.ctrl || '';
+      return `<div class="sb-item-wrap">
+        <button class="sb-item${currentPageId === pageId ? ' active' : ''}" data-page="${pageId}" data-ctrl="${ctrl}" onclick="pick(this)">${label}</button>
+        <button class="fav-star on" onclick="toggleFav('${pageId}',event)">★</button>
+      </div>`;
+    }).join('');
+  }
+  // Sync all star buttons
+  document.querySelectorAll('.fav-star').forEach(s => {
+    const pageId = s.getAttribute('onclick').match(/'([^']+)'/)?.[1];
+    if (pageId) s.classList.toggle('on', favorites.includes(pageId));
+  });
+}
+
+// ── PRESETS ────────────────────────────────────────────────────────────────
+
+let presets = [];
+
+function savePreset() {
+  const name = prompt('Preset name:');
+  if (!name || !name.trim()) return;
+  presets.push({ name: name.trim(), queue: JSON.parse(JSON.stringify(printQueue)) });
+  STORAGE.set('presets', presets);
+  renderPresets();
+}
+
+function loadPreset(idx) {
+  const preset = presets[idx];
+  if (!preset) return;
+  printQueue = preset.queue.map(item => ({ ...item, id: Date.now() + Math.random() }));
+  renderQueue();
+}
+
+function deletePreset(idx) {
+  presets.splice(idx, 1);
+  STORAGE.set('presets', presets);
+  renderPresets();
+}
+
+function renderPresets() {
+  const list = document.getElementById('preset-list');
+  if (!list) return;
+  if (presets.length === 0) {
+    list.innerHTML = '<div style="font-size:9px;color:#ccc;font-style:italic;padding:2px 0">None saved</div>';
+    return;
+  }
+  list.innerHTML = presets.map((p, i) => `
+    <div style="display:flex;align-items:center;gap:3px;padding:2px 0;border-bottom:0.5px solid #f5f5f5">
+      <span style="flex:1;font-size:9px;color:#555;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.name}">${p.name}</span>
+      <button class="btn" style="font-size:8px;padding:1px 5px;height:17px" onclick="loadPreset(${i})">Load</button>
+      <button class="qi-btn rm" style="font-size:10px" onclick="deletePreset(${i})" title="Delete">×</button>
+    </div>`).join('');
+}
+
+// ── WEEK BUNDLE ────────────────────────────────────────────────────────────
+
+function addWeekBundle() {
+  const mon = weekMonday(parseDate(document.getElementById('inp-date').value));
+  const params = captureParams();
+  const margin = getMarginMode();
+  const back = document.getElementById('inp-back-mode').value || 'blank';
+  const wStr = isoWeekStr(mon);
+  const wParams = {...params, week: wStr};
+
+  [['weekly-cc', wParams], ...Array.from({length:5}, (_,i) => {
+    const d = addDays(mon, i);
+    const ds = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+    return ['daily-slip', {...params, date: ds}];
+  }), ['weekly-review', wParams]].forEach(([pageId, p]) => {
+    printQueue.push({id: Date.now()+Math.random(), pageId, params:p, margin, back, label: queueLabel(pageId, p)});
+  });
+  renderQueue();
+}
+
+// ── MULTI-MONTH QUEUE ──────────────────────────────────────────────────────
+
+function queueMonths() {
+  const {y, m} = parseMonth(document.getElementById('inp-month').value);
+  const n = Math.max(1, parseInt(document.getElementById('inp-months').value) || 1);
+  const params = captureParams();
+  const margin = getMarginMode();
+  const back = document.getElementById('inp-back-mode').value || 'blank';
+  for (let i = 0; i < n; i++) {
+    let mm = m + i, yy = y;
+    while (mm > 11) { mm -= 12; yy++; }
+    const mStr = `${yy}-${pad(mm+1)}`;
+    const p = {...params, month: mStr};
+    printQueue.push({id: Date.now()+Math.random(), pageId: 'monthly-calendar', params: p, margin, back, label: queueLabel('monthly-calendar', p)});
+  }
+  renderQueue();
+}
+
+// ── ACCENT ─────────────────────────────────────────────────────────────────
+
+function setAccent(color) {
+  STORAGE.set('accent', color);
+  document.documentElement.style.setProperty('--accent', color || '');
+  document.documentElement.style.setProperty('--accent-sec', color || '#888');
+  document.querySelectorAll('.accent-sw').forEach(s => s.classList.toggle('on', s.dataset.color === color));
+  renderCurrent();
+}
+
+// ── LINE STYLE ─────────────────────────────────────────────────────────────
+
+function setLineStyle(style) {
+  STORAGE.set('lineStyle', style);
+  const root = document.documentElement;
+  if (style === 'dotted') {
+    root.style.setProperty('--line-border', '0.5px dotted #ccc');
+  } else if (style === 'blank') {
+    root.style.setProperty('--line-border', 'none');
+  } else {
+    root.style.setProperty('--line-border', '0.5px solid #ccc');
+  }
+  renderCurrent();
+}
+
+// ── MARGIN GUIDES ──────────────────────────────────────────────────────────
+
+let _showMargins = false;
+function toggleMargins() {
+  _showMargins = !_showMargins;
+  document.getElementById('preview-wrapper').classList.toggle('show-guides', _showMargins);
+  document.getElementById('btn-margins').classList.toggle('btn-primary', _showMargins);
+}
+
+// ── DRAG REORDER ───────────────────────────────────────────────────────────
+
+let _dragId = null;
+function qiDragStart(e, id) { _dragId = id; e.dataTransfer.effectAllowed = 'move'; }
+function qiDragOver(e, id) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+function qiDragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
+function qiDrop(e, id) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  if (_dragId === id) return;
+  const fi = printQueue.findIndex(i => i.id === _dragId);
+  const ti = printQueue.findIndex(i => i.id === id);
+  if (fi < 0 || ti < 0) return;
+  const [item] = printQueue.splice(fi, 1);
+  printQueue.splice(ti, 0, item);
+  _dragId = null;
+  renderQueue();
+}
+
+// ── KEYBOARD SHORTCUTS ─────────────────────────────────────────────────────
+
+document.addEventListener('keydown', e => {
+  if (e.target.matches('input,textarea,select')) return;
+  if (e.altKey || e.ctrlKey || e.metaKey) return;
+  if (e.key === 'p') doPrint();
+  if (e.key === 'q') addToQueue();
+  if (e.key === 'f') { const a = document.querySelector('.sb-item.active'); if (a) toggleFav(a.dataset.page, {stopPropagation:()=>{}}); }
+  if (e.key >= '1' && e.key <= '7') {
+    const idx = parseInt(e.key) - 1;
+    const secs = Array.from(document.querySelectorAll('#sidebar .sb-section'))
+      .filter(s => s.id !== 'fav-section' && s.id !== 'queue-section');
+    if (secs[idx]) { const btn = secs[idx].querySelector('.sb-item'); if (btn) btn.click(); }
+  }
+});
+
+function getDuplexMode() {
+  return document.querySelector('input[name="duplex"]:checked')?.value || 'single';
+}
+
+function queuePageCount() {
+  const duplex = getDuplexMode();
+  let pages = 0;
+  for (const item of printQueue) {
+    pages++; // front (or the blank page itself)
+    if (duplex === 'double' || item.back !== 'blank') pages++; // back
+  }
+  return pages;
+}
+
+function renderQueue() {
+  const list    = document.getElementById('queue-list');
+  const empty   = document.getElementById('queue-empty');
+  const btns    = document.getElementById('queue-btns');
+  const badge   = document.getElementById('queue-badge');
+  const summary = document.getElementById('queue-summary');
+  const duplex  = getDuplexMode();
+
+  if (printQueue.length === 0) {
+    list.innerHTML = '';
+    empty.style.display = '';
+    btns.style.display = 'none';
+    summary.style.display = 'none';
+    badge.textContent = '';
+    return;
+  }
+
+  empty.style.display = 'none';
+  btns.style.display = 'flex';
+  badge.textContent = ` (${printQueue.length})`;
+
+  const totalPages = queuePageCount();
+  if (duplex === 'double') {
+    const sheets = printQueue.length;
+    summary.textContent = `${sheets} sheet${sheets !== 1 ? 's' : ''} · ${totalPages} pages`;
+  } else {
+    summary.textContent = `${totalPages} page${totalPages !== 1 ? 's' : ''}`;
+  }
+  summary.style.display = '';
+
+  list.innerHTML = printQueue.map((item, i) => {
+    const last     = i === printQueue.length - 1;
+    const mid      = item.margin[0].toUpperCase();
+    const backLabel = item.back === 'notes' ? 'N' : item.back === 'duplicate' ? 'D' : '—';
+    const backOn    = item.back !== 'blank';
+    const backTitle = item.back === 'notes' ? 'Notes on back' : item.back === 'duplicate' ? 'Duplicate on back' : 'Blank back (click to cycle)';
+    const isBlank   = item.pageId === '__blank__';
+    return `<div class="qi" draggable="true" ondragstart="qiDragStart(event,${item.id})" ondragover="qiDragOver(event,${item.id})" ondrop="qiDrop(event,${item.id})" ondragleave="qiDragLeave(event)">
+      <span class="qi-num">${i + 1}</span>
+      <span class="qi-label" title="${item.label}">${item.label}</span>
+      ${isBlank ? '' : `<button class="qi-badge" onclick="cycleMargin(${item.id})" title="Margin (R/L/C)">${mid}</button>`}
+      ${isBlank ? '' : `<button class="qi-badge${backOn ? ' on' : ''}" onclick="cycleBack(${item.id})" title="${backTitle}">${backLabel}</button>`}
+      <button class="qi-btn" onclick="moveQueue(${item.id},-1)" title="Move up" ${i === 0 ? 'style="visibility:hidden"' : ''}>▲</button>
+      <button class="qi-btn" onclick="moveQueue(${item.id},1)" title="Move down" ${last ? 'style="visibility:hidden"' : ''}>▼</button>
+      <button class="qi-btn rm" onclick="removeFromQueue(${item.id})" title="Remove">×</button>
+    </div>`;
+  }).join('');
+}
+
+const BLANK_PAGE = `<div class="planner-page"><div class="page-inner"></div></div>`;
+
+function printQueueItems() {
+  if (printQueue.length === 0) return;
+  const wrapper     = document.getElementById('preview-wrapper');
+  const savedHtml   = wrapper.innerHTML;
+  const savedMargin = getMarginMode();
+  const duplex      = getDuplexMode();
+
+  const modes = [];
+  let html = '';
+
+  for (const item of printQueue) {
+    if (item.pageId === '__blank__') {
+      html += BLANK_PAGE; modes.push('center');
+      if (duplex === 'double') { html += BLANK_PAGE; modes.push('center'); }
+      continue;
+    }
+
+    html += renderWithParams(item.pageId, item.params);
+    modes.push(item.margin);
+    const bm = getBackMode(item.margin);
+
+    if (item.back === 'notes') {
+      html += pgNotesPage(); modes.push(bm);
+    } else if (item.back === 'duplicate') {
+      html += renderWithParams(item.pageId, item.params); modes.push(bm);
+    } else if (duplex === 'double') {
+      html += BLANK_PAGE; modes.push('center');
+    }
+  }
+
+  wrapper.innerHTML = html;
+  wrapper.querySelectorAll('.page-inner').forEach((el, i) => {
+    if (i < modes.length) applyMarginToEl(el, modes[i]);
+  });
+
+  injectPrintExtras(wrapper);
+  if (document.getElementById('inp-page-nums').checked) {
+    wrapper.querySelectorAll('.planner-page').forEach((pg, i) => {
+      const d = document.createElement('div');
+      d.style.cssText = 'position:absolute;bottom:0.28in;left:0.45in;font-size:5pt;color:#ccc';
+      d.textContent = i + 1;
+      pg.appendChild(d);
+    });
+  }
+
+  window.print();
+
+  const mr = document.querySelector(`input[name="margin"][value="${savedMargin}"]`);
+  if (mr) mr.checked = true;
+  wrapper.innerHTML = savedHtml;
+  applyMargin();
+  rescale();
+}
+
+// ── SCALE ─────────────────────────────────────────────────────────────────
+
+function rescale() {
+  const area = document.getElementById('preview-area');
+  const wrap = document.getElementById('preview-wrapper');
+  if (!wrap.firstElementChild) return;
+  const aw = area.clientWidth - 40;
+  const ah = area.clientHeight - 40;
+  const pw = 816; // 8.5in @ 96dpi
+  const ph = 1056; // 11in @ 96dpi
+  const scale = Math.min(aw / pw, ah / ph, 1);
+  wrap.style.transform = `scale(${scale})`;
+  wrap.style.transformOrigin = 'top center';
+  wrap.style.height = (ph * scale) + 'px';
+}
+
+window.addEventListener('resize', rescale);
+
+// ── COMPASS DOMAINS ────────────────────────────────────────────────────────
+
+const DEFAULT_DOMAINS = [
+  'Career & Vocation','Finance & Wealth','Health & Fitness','Relationships & Family',
+  'Personal Growth','Recreation & Fun','Spiritual / Purpose','Home & Environment'
+];
+
+let compassDomains = [...DEFAULT_DOMAINS];
+
+function openDomainEditor() {
+  const container = document.getElementById('domain-inputs');
+  container.innerHTML = compassDomains.map((d, i) =>
+    `<div style="display:flex;align-items:center;gap:6px">
+      <span style="font-size:9px;color:#aaa;width:10px">${i+1}</span>
+      <input type="text" value="${d.replace(/&/g,'&amp;').replace(/"/g,'&quot;')}" style="flex:1;font-size:11px;border:1px solid #ccc;border-radius:3px;padding:4px 8px">
+    </div>`
+  ).join('');
+  document.getElementById('dlg-domains').showModal();
+}
+
+function saveDomains() {
+  const inputs = document.querySelectorAll('#domain-inputs input');
+  compassDomains = Array.from(inputs).map((inp, i) => inp.value.trim() || DEFAULT_DOMAINS[i]);
+  STORAGE.set('compass-domains', compassDomains);
+  document.getElementById('dlg-domains').close();
+  renderCurrent();
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+
+// ── FIRST-RUN HELP ─────────────────────────────────────────────────────────
+
+// The dialog markup sits after this script, so anything that touches it waits for DOM ready.
+function openHelp() {
+  const dlg = document.getElementById('dlg-help');
+  if (!dlg.dataset.bound) {
+    // Covers the button, Esc, and backdrop dismissal alike
+    dlg.addEventListener('close', () => STORAGE.set('seenHelp', true));
+    dlg.dataset.bound = '1';
+  }
+  dlg.showModal();
+}
+function closeHelp() { document.getElementById('dlg-help').close(); }
+
+function toggleSec(hdr) {
+  const items = hdr.nextElementSibling;
+  if (!items) return;
+  const collapsed = items.style.display === 'none';
+  items.style.display = collapsed ? '' : 'none';
+  const arrow = hdr.querySelector('span:last-child');
+  if (arrow) arrow.textContent = collapsed ? '▾' : '▸';
+}
+
+(function init() {
+  const t = today();
+  const tStr = `${t.getFullYear()}-${pad(t.getMonth()+1)}-${pad(t.getDate())}`;
+  document.getElementById('inp-date').value = tStr;
+  document.getElementById('inp-month').value = `${t.getFullYear()}-${pad(t.getMonth()+1)}`;
+  document.getElementById('inp-year').value = t.getFullYear();
+  document.getElementById('inp-week').value = isoWeekStr(t);
+  document.getElementById('inp-quarter').value = Math.ceil((t.getMonth() + 1) / 3);
+
+  // Load persisted settings
+  favorites = STORAGE.get('favorites') || [];
+  presets = STORAGE.get('presets') || [];
+  const savedDomains = STORAGE.get('compass-domains');
+  if (Array.isArray(savedDomains) && savedDomains.length === 8) compassDomains = savedDomains;
+
+  const savedAccent = STORAGE.get('accent');
+  if (savedAccent) setAccent(savedAccent);
+
+  const savedLineStyle = STORAGE.get('lineStyle');
+  if (savedLineStyle) {
+    const r = document.querySelector(`input[name="line-style"][value="${savedLineStyle}"]`);
+    if (r) r.checked = true;
+    setLineStyle(savedLineStyle);
+  }
+
+  const savedName = STORAGE.get('username');
+  if (savedName) document.getElementById('inp-username').value = savedName;
+
+  renderFavs();
+  renderPresets();
+
+  // Default to Weekly Command Center
+  document.querySelector('[data-page="weekly-cc"]').click();
+
+  // First visit on this device — show the intro once (dismissal is what records it)
+  if (!STORAGE.get('seenHelp')) {
+    window.addEventListener('DOMContentLoaded', openHelp);
+  }
+})();
+</script>
+
+<dialog id="dlg-help" style="padding:0;border:1px solid #ddd;border-radius:8px;box-shadow:0 8px 40px rgba(0,0,0,0.2);max-width:560px;width:calc(100vw - 40px);font-family:system-ui,-apple-system,Arial,sans-serif;color:#333">
+  <div style="padding:22px 26px 20px">
+    <h2 style="font-size:16px;margin-bottom:4px;letter-spacing:0.01em">Planner Generator</h2>
+    <p style="font-size:12.5px;line-height:1.55;color:#555;margin-bottom:16px">
+      A free tool for generating <strong>printable paper planner pages</strong>. Everything runs in your
+      browser — nothing is uploaded, no account needed. Pick a page type, set the date or project, then
+      print it or save it as a PDF.
+    </p>
+
+    <div style="font-size:10px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:#999;margin-bottom:8px">How it works</div>
+    <ol style="font-size:12.5px;line-height:1.65;color:#444;padding-left:20px;margin-bottom:18px">
+      <li><strong>Pick a page</strong> from the left sidebar — daily slips, weekly command center, project dashboards, meeting notes, habit trackers and more.</li>
+      <li><strong>Set the parameters</strong> in the top bar. The controls change with the page: date, week, project name, time range, and so on. The preview updates as you type.</li>
+      <li><strong>Print one page</strong> with <em>Print / Save PDF</em> — or click <em>+ Queue</em> to stack up several pages and print them all in one job.</li>
+    </ol>
+
+    <div style="font-size:10px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:#999;margin-bottom:8px">Worth knowing</div>
+    <ul style="font-size:12.5px;line-height:1.65;color:#444;padding-left:20px;margin-bottom:20px">
+      <li>Pages are letter size (8.5&Prime; × 11&Prime;). In your browser's print dialog, set margins to <strong>None</strong> and scale to <strong>100%</strong>.</li>
+      <li>The <strong>Margin</strong> setting shifts the binding edge for left- or right-hand pages in a binder.</li>
+      <li>Star any page (★) to pin it to Favorites. Your accent color, name, favorites and saved queues are remembered on this device.</li>
+    </ul>
+
+    <div style="display:flex;gap:8px;justify-content:flex-end;align-items:center">
+      <span style="font-size:11px;color:#aaa;margin-right:auto">Reopen this any time with the <strong>?</strong> button.</span>
+      <button class="btn btn-primary" onclick="closeHelp()">Get started</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="dlg-domains" style="padding:20px;border:1px solid #ddd;border-radius:6px;box-shadow:0 4px 20px rgba(0,0,0,0.15);min-width:300px;font-family:system-ui,-apple-system,Arial,sans-serif">
+  <div style="font-size:12px;font-weight:700;margin-bottom:12px;letter-spacing:0.05em;text-transform:uppercase;color:#333">Edit Life Compass Domains</div>
+  <div id="domain-inputs" style="display:flex;flex-direction:column;gap:7px;margin-bottom:16px"></div>
+  <div style="display:flex;gap:8px;justify-content:flex-end">
+    <button class="btn" onclick="document.getElementById('dlg-domains').close()">Cancel</button>
+    <button class="btn btn-primary" onclick="saveDomains()">Save</button>
+  </div>
+</dialog>
+
+</body>
+</html>
