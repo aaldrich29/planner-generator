@@ -43,6 +43,11 @@ Top-bar inputs use IDs like `inp-date`, `inp-week`, `inp-month`, `inp-year`, `in
 - `printQueueItems()` — renders all queued pages into a hidden container and calls `window.print()`
 - Queue items stored in the `queue` array; each item is a plain object `{ pageId, params, margin, back }`
 
+### Back-page modes
+`back` is one of `blank`, `notes`, `notes-dated`, or `duplicate`, set by the top-bar Back dropdown or by cycling the queue-item badge (`—` / `N` / `N+` / `D`). All four are handled in three places that must stay in sync: `doPrint()`, `printWeekDays()`, and `printQueueItems()`.
+
+`notes-dated` stamps the front page's date onto the notes page. `notesDateLabel(pageId, params)` derives it from the page's own sidebar `data-ctrl` list (priority: date → week → month → quarter → year), so new page types work without touching it; pages with no date control get a blank line, as does anything queued with Undated checked.
+
 ### Shared CSS utility classes
 | Class | Purpose |
 |---|---|

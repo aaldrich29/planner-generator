@@ -736,6 +736,7 @@ dialog::backdrop { background: rgba(0,0,0,0.35); }
     <select id="inp-back-mode" style="font-size:10px">
       <option value="blank">— (none)</option>
       <option value="notes">Notes page</option>
+      <option value="notes-dated">Notes (dated)</option>
       <option value="duplicate">Duplicate</option>
     </select>
   </div>
@@ -1395,14 +1396,38 @@ function pgHabitTracker() {
   </div></div>`;
 }
 
-function pgNotesPage() {
+// dateStr — optional. When present it is printed on the Date line instead of
+// leaving it blank (used by the "Notes (dated)" back-page mode).
+function pgNotesPage(dateStr) {
+  const dateLine = dateStr
+    ? `<div class="wline" style="display:flex;align-items:flex-end;font-size:8pt;color:#555;padding-bottom:1pt">${dateStr}</div>`
+    : '<div class="wline"></div>';
   return `<div class="planner-page"><div class="page-inner">
     <div style="display:flex;gap:20pt;margin-bottom:5pt;flex-shrink:0">
       <div style="flex:1"><div class="sec-label">Title</div><div class="wline"></div></div>
-      <div style="flex:0 0 1.6in"><div class="sec-label">Date</div><div class="wline"></div></div>
+      <div style="flex:0 0 1.6in"><div class="sec-label">Date</div>${dateLine}</div>
     </div>
     ${flexrows(31)}
   </div></div>`;
+}
+
+// Date stamp for a "Notes (dated)" back page, matching however the front page is
+// dated. The page's own `data-ctrl` list says which parameter it keys off, so this
+// stays correct as page types are added.
+function notesDateLabel(pageId, params) {
+  const p = params || {};
+  if (p.undated) return '';
+  const btn = document.querySelector(`.sb-item[data-page="${pageId}"]`);
+  const ctrls = (btn?.dataset.ctrl || '').split(',');
+  if (ctrls.includes('date')) return fmtLong(parseDate(p.date));
+  if (ctrls.includes('week')) {
+    const mon = parseWeek(p.week), sun = addDays(mon, 6);
+    return `Week of ${fmtShort(mon)} – ${fmtShort(sun)}, ${sun.getFullYear()}`;
+  }
+  if (ctrls.includes('month'))   { const {y, m} = parseMonth(p.month); return `${MONTHS[m]} ${y}`; }
+  if (ctrls.includes('quarter')) return `Q${p.quarter || 1} ${p.year || ''}`.trim();
+  if (ctrls.includes('year'))    return String(p.year || '');
+  return ''; // undated page type — leave the line blank
 }
 
 function pgProjectList() {
@@ -2493,6 +2518,8 @@ function doPrint() {
   const tmp      = document.createElement('div');
   if (backVal === 'notes') {
     tmp.innerHTML = pgNotesPage();
+  } else if (backVal === 'notes-dated') {
+    tmp.innerHTML = pgNotesPage(notesDateLabel(currentPageId, captureParams()));
   } else {
     tmp.innerHTML = (PAGE_MAP[currentPageId] || (() => ''))();
   }
@@ -2519,11 +2546,17 @@ function printWeekDays(n = 5) {
   const backMode = getBackMode(mode);
   const wrapper = document.getElementById('preview-wrapper');
 
+  const params = captureParams();
   let html = '';
   for (let i = 0; i < n; i++) {
-    html += pgDailySlip(addDays(mon, i));
+    const d = addDays(mon, i);
+    html += pgDailySlip(d);
     if (backVal === 'notes') html += pgNotesPage();
-    else if (backVal === 'duplicate') html += pgDailySlip(addDays(mon, i));
+    else if (backVal === 'notes-dated') {
+      const ds = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+      html += pgNotesPage(notesDateLabel('daily-slip', { ...params, date: ds }));
+    }
+    else if (backVal === 'duplicate') html += pgDailySlip(d);
   }
   wrapper.innerHTML = html;
 
@@ -2736,7 +2769,8 @@ function cycleMargin(id) {
 function cycleBack(id) {
   const item = printQueue.find(it => it.id === id);
   if (!item) return;
-  item.back = item.back === 'blank' ? 'notes' : item.back === 'notes' ? 'duplicate' : 'blank';
+  const cycle = ['blank', 'notes', 'notes-dated', 'duplicate'];
+  item.back = cycle[(cycle.indexOf(item.back) + 1) % cycle.length];
   renderQueue();
 }
 
@@ -2992,9 +3026,16 @@ function renderQueue() {
   list.innerHTML = printQueue.map((item, i) => {
     const last     = i === printQueue.length - 1;
     const mid      = item.margin[0].toUpperCase();
-    const backLabel = item.back === 'notes' ? 'N' : item.back === 'duplicate' ? 'D' : '—';
+    const BACK_LABELS = { notes: 'N', 'notes-dated': 'N+', duplicate: 'D', blank: '—' };
+    const BACK_TITLES = {
+      notes:         'Notes on back (click to cycle)',
+      'notes-dated': 'Dated notes on back (click to cycle)',
+      duplicate:     'Duplicate on back (click to cycle)',
+      blank:         'Blank back (click to cycle)',
+    };
+    const backLabel = BACK_LABELS[item.back] || '—';
     const backOn    = item.back !== 'blank';
-    const backTitle = item.back === 'notes' ? 'Notes on back' : item.back === 'duplicate' ? 'Duplicate on back' : 'Blank back (click to cycle)';
+    const backTitle = BACK_TITLES[item.back] || BACK_TITLES.blank;
     const isBlank   = item.pageId === '__blank__';
     return `<div class="qi" draggable="true" ondragstart="qiDragStart(event,${item.id})" ondragover="qiDragOver(event,${item.id})" ondrop="qiDrop(event,${item.id})" ondragleave="qiDragLeave(event)">
       <span class="qi-num">${i + 1}</span>
@@ -3033,6 +3074,8 @@ function printQueueItems() {
 
     if (item.back === 'notes') {
       html += pgNotesPage(); modes.push(bm);
+    } else if (item.back === 'notes-dated') {
+      html += pgNotesPage(notesDateLabel(item.pageId, item.params)); modes.push(bm);
     } else if (item.back === 'duplicate') {
       html += renderWithParams(item.pageId, item.params); modes.push(bm);
     } else if (duplex === 'double') {

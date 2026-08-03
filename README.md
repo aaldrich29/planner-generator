@@ -9,6 +9,8 @@ set the date or project, print it or save it as a PDF.
 No install, no account, no data leaves your browser. It's one HTML file with no dependencies — save it
 locally and it works offline forever.
 
+![The planner generator, showing the Weekly Command Center page in the live preview](docs/screenshot.png)
+
 ## How it works
 
 1. **Pick a page** from the left sidebar.
@@ -37,7 +39,8 @@ to **100%**.
 
 - **Print queue** — build a multi-page batch, drag to reorder, save it as a reusable preset.
 - **Binder margins** — per-page left / right / center binding margin, so pages sit correctly in a
-  two-sided binder. Optional duplex backs (blank, notes, or duplicate).
+  two-sided binder. Optional duplex backs: blank, notes, notes pre-stamped with the front page's
+  date, or a duplicate of the front.
 - **Customization** — accent color, ruled / dotted / blank lines, your name in the footer.
 - **Favorites** — star the pages you use weekly to pin them to the top.
 - **Local only** — preferences and saved queues live in your browser's localStorage. There is no
