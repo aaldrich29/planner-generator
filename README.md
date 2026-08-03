@@ -6,8 +6,8 @@ set the date or project, print it or save it as a PDF.
 
 **→ [Open the planner generator](https://aaldrich29.github.io/planner-generator/)**
 
-No install, no account, no data leaves your browser. It's one HTML file with no dependencies — save it
-locally and it works offline forever.
+No install, no account, and your planner content never leaves your browser. It's one HTML file with no
+dependencies — save it locally and it works offline forever.
 
 ![The planner generator, showing the Weekly Command Center page in the live preview](docs/screenshot.png)
 
@@ -44,7 +44,9 @@ to **100%**.
 - **Customization** — accent color, ruled / dotted / blank lines, your name in the footer.
 - **Favorites** — star the pages you use weekly to pin them to the top.
 - **Local only** — preferences and saved queues live in your browser's localStorage. There is no
-  server and no analytics.
+  backend and nothing you type is ever transmitted. The hosted copy loads
+  [GoatCounter](https://www.goatcounter.com/) for anonymous page-view counts (no cookies, no
+  cross-site tracking); a locally saved copy makes no network requests at all.
 
 ## Running it yourself
 
