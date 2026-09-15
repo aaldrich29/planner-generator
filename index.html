@@ -866,6 +866,20 @@ dialog::backdrop { background: rgba(0,0,0,0.35); }
           <input type="checkbox" id="inp-page-nums" style="width:auto;height:auto"> Pg #
         </label>
       </div>
+      <div id="af-section" style="border-bottom:1px solid #f0f0f0;padding:4px 8px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+          <span style="font-size:9px;color:#aaa" title="5 daily slips (dated notes on the back) + weekly review + next week's plan">&#9733; Andrew&#39;s Favorite</span>
+          <div class="seg-ctrl" style="height:19px">
+            <label style="font-size:9px;padding:0 7px"><input type="radio" name="af-days" value="5" checked> M&ndash;F</label>
+            <label style="font-size:9px;padding:0 7px"><input type="radio" name="af-days" value="7"> M&ndash;Su</label>
+          </div>
+        </div>
+        <div style="display:flex;gap:4px">
+          <button class="btn" style="flex:1;font-size:9px;padding:1px 6px;height:20px" onclick="addAndrewsFavorite()">+ Queue</button>
+          <button class="btn btn-primary" style="flex:1;font-size:9px;padding:1px 6px;height:20px" onclick="printAndrewsFavorite()">Print</button>
+        </div>
+        <div style="font-size:8px;color:#ccc;margin-top:3px;line-height:1.35">Uses the Date field&#39;s week. Print two-sided (long-edge flip) so each front/back pair shares one sheet.</div>
+      </div>
       <div id="preset-section" style="border-bottom:1px solid #f0f0f0;padding:4px 8px">
         <div style="display:flex;justify-content:space-between;align-items:center">
           <span style="font-size:9px;color:#aaa">Saved Presets</span>
@@ -2894,6 +2908,56 @@ function addWeekBundle() {
     printQueue.push({id: Date.now()+Math.random(), pageId, params:p, margin, back, label: queueLabel(pageId, p)});
   });
   renderQueue();
+}
+
+// ── ANDREW'S FAVORITE ──────────────────────────────────────────────────────
+// One-click week pack: a daily execution slip for each weekday (dated notes on
+// the back, margin left), then the weekly review (margin left) followed by the
+// next week's weekly plan (margin right). Every front page carries its own
+// back page, so the page count is always even and printing two-sided lands
+// review + plan on one sheet.
+
+function afDays() {
+  return +(document.querySelector('input[name="af-days"]:checked')?.value || 5);
+}
+
+function andrewsFavoriteItems(days) {
+  const mon      = weekMonday(parseDate(document.getElementById('inp-date').value));
+  const params   = captureParams();
+  const thisWeek = isoWeekStr(mon);
+  const nextWeek = isoWeekStr(addDays(mon, 7));
+  const mk = (pageId, p, margin, back) => ({
+    id: Date.now() + Math.random(), pageId, params: p, margin, back,
+    label: queueLabel(pageId, p),
+  });
+
+  const items = [];
+  for (let i = 0; i < days; i++) {
+    const d  = addDays(mon, i);
+    const ds = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+    items.push(mk('daily-slip', { ...params, date: ds, week: thisWeek }, 'left', 'notes-dated'));
+  }
+  items.push(mk('weekly-review', { ...params, week: thisWeek }, 'left',  'blank'));
+  items.push(mk('weekly-plan',   { ...params, week: nextWeek }, 'right', 'blank'));
+  return items;
+}
+
+function buildAndrewsFavorite() {
+  if (printQueue.length && !confirm("Replace the current queue with Andrew's Favorite?")) return false;
+  printQueue = andrewsFavoriteItems(afDays());
+  // Backs are explicit here — the app must not insert its own blank backs.
+  const single = document.querySelector('input[name="duplex"][value="single"]');
+  if (single) single.checked = true;
+  renderQueue();
+  return true;
+}
+
+function addAndrewsFavorite() {
+  buildAndrewsFavorite();
+}
+
+function printAndrewsFavorite() {
+  if (buildAndrewsFavorite()) printQueueItems();
 }
 
 // ── MULTI-MONTH QUEUE ──────────────────────────────────────────────────────
