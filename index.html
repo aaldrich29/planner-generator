@@ -2912,10 +2912,11 @@ function addWeekBundle() {
 
 // ── ANDREW'S FAVORITE ──────────────────────────────────────────────────────
 // One-click week pack: a daily execution slip for each weekday (dated notes on
-// the back, margin left), then the weekly review (margin left) followed by the
-// next week's weekly plan (margin right). Every front page carries its own
-// back page, so the page count is always even and printing two-sided lands
-// review + plan on one sheet.
+// the back), then the weekly review followed by the next week's weekly plan.
+// The slips and the review are right-hand pages (wide left margin, margin
+// mode 'right'); the plan is a left-hand page. Every front page carries its
+// own back page, so the page count is always even and printing two-sided
+// lands review + plan on one sheet.
 
 function afDays() {
   return +(document.querySelector('input[name="af-days"]:checked')?.value || 5);
@@ -2935,10 +2936,10 @@ function andrewsFavoriteItems(days) {
   for (let i = 0; i < days; i++) {
     const d  = addDays(mon, i);
     const ds = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-    items.push(mk('daily-slip', { ...params, date: ds, week: thisWeek }, 'left', 'notes-dated'));
+    items.push(mk('daily-slip', { ...params, date: ds, week: thisWeek }, 'right', 'notes-dated'));
   }
-  items.push(mk('weekly-review', { ...params, week: thisWeek }, 'left',  'blank'));
-  items.push(mk('weekly-plan',   { ...params, week: nextWeek }, 'right', 'blank'));
+  items.push(mk('weekly-review', { ...params, week: thisWeek }, 'right', 'blank'));
+  items.push(mk('weekly-plan',   { ...params, week: nextWeek }, 'left',  'blank'));
   return items;
 }
 
