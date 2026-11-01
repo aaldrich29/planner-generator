@@ -2587,6 +2587,7 @@ function renderCurrent() {
   if (!fn) return;
   document.getElementById('preview-wrapper').innerHTML = fn();
   applyMargin();
+  inkify(document.getElementById('preview-wrapper'));
   rescale();
 }
 
@@ -3039,6 +3040,37 @@ function setLineStyle(style) {
 
 // ── PAGE SIZE ──────────────────────────────────────────────────────────────
 
+// E-ink renders the light greys used for paper (#ccc lines, #aaa labels) too faintly,
+// so in reMarkable mode every colour on a page is pushed darker with a gamma curve:
+// white stays white, black stays black, greys in between move toward black
+// (#eee→#ccc-ish, #ccc→#888-ish, #aaa→#555-ish). It works off computed styles, so
+// it covers class CSS, inline styles and the line-style variable without touching
+// any renderer. Applied to the preview (WYSIWYG) and again right before printing.
+const RM_INK_GAMMA = 2.6;
+const INK_PROPS = ['color', 'background-color',
+  'border-top-color', 'border-right-color', 'border-bottom-color', 'border-left-color'];
+
+function inkColor(css) {
+  const m = css.match(/^rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)(?:,\s*([\d.]+))?\)$/);
+  if (!m || m[4] === '0') return null;
+  const ch = v => Math.round(255 * Math.pow(v / 255, RM_INK_GAMMA));
+  const rgb = `${ch(+m[1])}, ${ch(+m[2])}, ${ch(+m[3])}`;
+  return m[4] !== undefined ? `rgba(${rgb}, ${m[4]})` : `rgb(${rgb})`;
+}
+
+function inkify(root) {
+  if (!document.body.classList.contains('size-rm')) return;
+  root.querySelectorAll('.planner-page, .planner-page *').forEach(el => {
+    if (el.dataset.inked) return;           // never darken twice
+    const cs = getComputedStyle(el);
+    const out = INK_PROPS.map(p => [p, inkColor(cs.getPropertyValue(p))]);
+    out.forEach(([p, v]) => { if (v) el.style.setProperty(p, v, 'important'); });
+    el.dataset.inked = '1';
+  });
+}
+
+window.addEventListener('beforeprint', () => inkify(document.getElementById('preview-wrapper')));
+
 function setPageSize(size) {
   if (size !== 'rm') size = 'letter';
   STORAGE.set('pageSize', size);
@@ -3046,7 +3078,7 @@ function setPageSize(size) {
   document.body.classList.toggle('size-rm', size === 'rm');
   document.getElementById('page-size-css').textContent =
     size === 'rm' ? '@page { size: 6.2124in 8.2832in; margin: 0; }' : '';
-  rescale();
+  renderCurrent(); // re-render so the preview picks up / drops the reMarkable ink pass
 }
 
 // ── MARGIN GUIDES ──────────────────────────────────────────────────────────
