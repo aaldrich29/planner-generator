@@ -64,7 +64,7 @@ Top-bar inputs use IDs like `inp-date`, `inp-week`, `inp-month`, `inp-year`, `in
 Each page carries a margin class: `margin-left`, `margin-right`, or `margin-center`. Toggle per queue item via the R/L/C badge. Default margin is controlled by the top-bar segmented control.
 
 ### Page size (Letter / reMarkable 1/2)
-Top-bar **Size** dropdown → `setPageSize()`. reMarkable mode adds `body.size-rm`, which lays each page out 8.5in × 11.32in (≈3:4, extra height flows into flex areas) and, in `@media print` only, applies `zoom: 0.73087` so it prints at 6.21in × 8.28in (1404×1872 px @ 226 dpi). The matching `@page` size is written into `<style id="page-size-css">`. Renderers keep working in letter inches — don't add size-specific layout to them. `rescale()` uses the taller page height when `size-rm` is on.
+Top-bar **Size** dropdown → `setPageSize()`. reMarkable mode adds `body.size-rm`, which lays each page out on a 7in × 9.32in canvas (≈3:4) with a uniform 0.15in margin — Right/Left/Center margin modes are ignored and the Margin control is greyed out — and, in `@media print` only, applies `zoom: 0.88749` so it prints at 6.21in × 8.28in (1404×1872 px @ 226 dpi). The matching `@page` size is written into `<style id="page-size-css">`. Renderers keep working in letter inches — don't add size-specific layout to them; the canvas is ~0.7in shorter than letter's writable area, so the few rigid blocks are relaxed generically in the `size-rm` CSS block (`.pt td` row height, `.wp-grid`). New fixed-height layouts should be able to shrink. `rescale()` uses the rm canvas size when `size-rm` is on.
 
 ### localStorage persistence
 `STORAGE` object (prefix `plnr_`) persists: user name, accent color, line style, page size, favorites array, and saved queue presets.
