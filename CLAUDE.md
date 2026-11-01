@@ -63,8 +63,11 @@ Top-bar inputs use IDs like `inp-date`, `inp-week`, `inp-month`, `inp-year`, `in
 ### Margin modes
 Each page carries a margin class: `margin-left`, `margin-right`, or `margin-center`. Toggle per queue item via the R/L/C badge. Default margin is controlled by the top-bar segmented control.
 
+### Page size (Letter / reMarkable 1/2)
+Top-bar **Size** dropdown → `setPageSize()`. reMarkable mode adds `body.size-rm`, which lays each page out 8.5in × 11.32in (≈3:4, extra height flows into flex areas) and, in `@media print` only, applies `zoom: 0.73087` so it prints at 6.21in × 8.28in (1404×1872 px @ 226 dpi). The matching `@page` size is written into `<style id="page-size-css">`. Renderers keep working in letter inches — don't add size-specific layout to them. `rescale()` uses the taller page height when `size-rm` is on.
+
 ### localStorage persistence
-`STORAGE` object (prefix `plnr_`) persists: user name, accent color, line style, favorites array, and saved queue presets.
+`STORAGE` object (prefix `plnr_`) persists: user name, accent color, line style, page size, favorites array, and saved queue presets.
 
 ## Binder System Context
 
@@ -89,7 +92,7 @@ Strategic pages (life-compass, annual-goals, quarterly-plan, etc.) sit outside t
 
 ## Print Considerations
 
-- Pages are sized at `8.5in × 11in` (letter). Keep all content within printable margins.
+- Pages are sized at `8.5in × 11in` (letter), or zoomed to reMarkable size at print time (see Page size). Keep all content within printable margins.
 - Colors use `#ccc` borders and `#fff` backgrounds — avoid dark fills that waste ink.
 - Test print output via browser print preview (Ctrl+P); `@media print` rules hide the app shell.
 - Duplex ("Double") mode pairs each queue item with an auto-generated back side; sheet count ≠ page count.

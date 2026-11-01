@@ -491,6 +491,17 @@ body {
 
 @page { size: 8.5in 11in; margin: 0; }
 
+/* ─── PAGE SIZE: reMarkable 1/2 ───
+   Screen is 1404×1872 px @ 226 dpi = 6.21in × 8.28in (3:4). Pages are laid out in
+   absolute inches for letter, so rather than re-flowing every renderer we lay the
+   page out 8.5in wide × 11.32in tall (≈3:4 — the extra height goes to flex areas)
+   and zoom it down to the device size when printing. The matching @page size lives
+   in #page-size-css, written by setPageSize(). */
+body.size-rm .planner-page { height: 11.32in; }
+@media print {
+  body.size-rm .planner-page { zoom: 0.73087; }  /* 6.2124in / 8.5in */
+}
+
 /* ─── FAVORITES ─── */
 .sb-item-wrap { display:flex; align-items:center; }
 .fav-star { background:none; border:none; cursor:pointer; color:#ddd; font-size:9px; padding:0 4px; flex-shrink:0; }
@@ -548,6 +559,7 @@ dialog::backdrop { background: rgba(0,0,0,0.35); }
   letter-spacing: 0.06em;
 }
 </style>
+<style id="page-size-css"></style>
 </head>
 <body>
 
@@ -726,6 +738,13 @@ dialog::backdrop { background: rgba(0,0,0,0.35); }
   </div>
   <div class="ctrl-group">
     <input type="text" id="inp-username" placeholder="Your name (footer)" style="width:130px;font-size:10px" oninput="STORAGE.set('username', this.value)">
+  </div>
+  <div class="ctrl-group">
+    <label>Size</label>
+    <select id="inp-page-size" style="font-size:10px" onchange="setPageSize(this.value)" title="Paper size for printing / PDF">
+      <option value="letter">Letter</option>
+      <option value="rm">reMarkable 1/2</option>
+    </select>
   </div>
   <div class="ctrl-group">
     <label>Margin</label>
@@ -3004,6 +3023,18 @@ function setLineStyle(style) {
   renderCurrent();
 }
 
+// ── PAGE SIZE ──────────────────────────────────────────────────────────────
+
+function setPageSize(size) {
+  if (size !== 'rm') size = 'letter';
+  STORAGE.set('pageSize', size);
+  document.getElementById('inp-page-size').value = size;
+  document.body.classList.toggle('size-rm', size === 'rm');
+  document.getElementById('page-size-css').textContent =
+    size === 'rm' ? '@page { size: 6.2124in 8.2832in; margin: 0; }' : '';
+  rescale();
+}
+
 // ── MARGIN GUIDES ──────────────────────────────────────────────────────────
 
 let _showMargins = false;
@@ -3185,7 +3216,7 @@ function rescale() {
   const aw = area.clientWidth - 40;
   const ah = area.clientHeight - 40;
   const pw = 816; // 8.5in @ 96dpi
-  const ph = 1056; // 11in @ 96dpi
+  const ph = document.body.classList.contains('size-rm') ? 1087 : 1056; // 11.32in / 11in @ 96dpi
   const scale = Math.min(aw / pw, ah / ph, 1);
   wrap.style.transform = `scale(${scale})`;
   wrap.style.transformOrigin = 'top center';
@@ -3271,6 +3302,8 @@ function toggleSec(hdr) {
     if (r) r.checked = true;
     setLineStyle(savedLineStyle);
   }
+
+  setPageSize(STORAGE.get('pageSize') || 'letter');
 
   const savedName = STORAGE.get('username');
   if (savedName) document.getElementById('inp-username').value = savedName;
