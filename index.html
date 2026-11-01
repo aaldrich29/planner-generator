@@ -492,14 +492,28 @@ body {
 @page { size: 8.5in 11in; margin: 0; }
 
 /* ─── PAGE SIZE: reMarkable 1/2 ───
-   Screen is 1404×1872 px @ 226 dpi = 6.21in × 8.28in (3:4). Pages are laid out in
-   absolute inches for letter, so rather than re-flowing every renderer we lay the
-   page out 8.5in wide × 11.32in tall (≈3:4 — the extra height goes to flex areas)
-   and zoom it down to the device size when printing. The matching @page size lives
-   in #page-size-css, written by setPageSize(). */
-body.size-rm .planner-page { height: 11.32in; }
+   Screen is 1404×1872 px @ 226 dpi = 6.2124in × 8.2832in (3:4). Renderers are written
+   in letter inches, so instead of re-flowing each one we lay the page out on a smaller
+   7in × 9.32in canvas (≈3:4) with a thin uniform margin — a tablet has no binding, so
+   Right/Left/Center margin modes are ignored — then zoom it up to device size when
+   printing (6.2124 / 7 = 0.88749). Narrower canvas ⇒ bigger zoom ⇒ bigger lines.
+   The matching @page size lives in #page-size-css, written by setPageSize(). */
+body.size-rm .planner-page { width: 7in; height: 9.32in; }
+body.size-rm .page-inner,
+body.size-rm .page-inner.lp,
+body.size-rm .page-inner.cp { padding: 0.15in; }
+/* The canvas is ~0.7in shorter than letter's writable area: let the few rigid
+   blocks give a little. */
+body.size-rm .pt td { height: 0.25in; }
+body.size-rm .wp-grid { height: auto; flex: 1 1 6in; min-height: 0; }
+/* Footer name / page number sit in the thin bottom margin. */
+body.size-rm .print-name { bottom: 0.03in; right: 0.15in; }
+body.size-rm .print-pnum { bottom: 0.03in !important; left: 0.15in !important; }
+body.size-rm .show-guides .page-inner::before { top: 0.15in; left: 0.15in; right: 0.15in; bottom: 0.15in; }
+body.size-rm .show-guides .planner-page::after { display: none; }
+body.size-rm #ctrl-margin { opacity: 0.35; pointer-events: none; }
 @media print {
-  body.size-rm .planner-page { zoom: 0.73087; }  /* 6.2124in / 8.5in */
+  body.size-rm .planner-page { zoom: 0.88749; }
 }
 
 /* ─── FAVORITES ─── */
@@ -746,7 +760,7 @@ dialog::backdrop { background: rgba(0,0,0,0.35); }
       <option value="rm">reMarkable 1/2</option>
     </select>
   </div>
-  <div class="ctrl-group">
+  <div class="ctrl-group" id="ctrl-margin" title="Ignored in reMarkable size (no binding — thin even margins)">
     <label>Margin</label>
     <div class="seg-ctrl">
       <label><input type="radio" name="margin" value="right" checked onchange="applyMargin()"> Right pg</label>
@@ -3192,6 +3206,7 @@ function printQueueItems() {
   if (document.getElementById('inp-page-nums').checked) {
     wrapper.querySelectorAll('.planner-page').forEach((pg, i) => {
       const d = document.createElement('div');
+      d.className = 'print-pnum';
       d.style.cssText = 'position:absolute;bottom:0.28in;left:0.45in;font-size:5pt;color:#ccc';
       d.textContent = i + 1;
       pg.appendChild(d);
@@ -3215,8 +3230,9 @@ function rescale() {
   if (!wrap.firstElementChild) return;
   const aw = area.clientWidth - 40;
   const ah = area.clientHeight - 40;
-  const pw = 816; // 8.5in @ 96dpi
-  const ph = document.body.classList.contains('size-rm') ? 1087 : 1056; // 11.32in / 11in @ 96dpi
+  const rm = document.body.classList.contains('size-rm');
+  const pw = rm ? 672 : 816;  // 7in / 8.5in @ 96dpi
+  const ph = rm ? 895 : 1056; // 9.32in / 11in @ 96dpi
   const scale = Math.min(aw / pw, ah / ph, 1);
   wrap.style.transform = `scale(${scale})`;
   wrap.style.transformOrigin = 'top center';
